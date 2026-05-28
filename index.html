@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -5,8 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>重量訓練節奏控制器 Pro</title>
     
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22 fill=%22none%22><rect width=%22512%22 height=%22512%22 rx=%22110%22 fill=%22%231A1A1A%22/><path d=%22M110 256h292%22 stroke=%22%23FFFFFF%22 stroke-width=%2236%22 stroke-linecap=%22round%22/><path d=%22M140 160v192M80 195v122%22 stroke=%22%23FFFFFF%22 stroke-width=%2232%22 stroke-linecap=%22round%22/><path d=%22M372 160v192M432 195v122%22 stroke=%22%23FFFFFF%22 stroke-width=%2232%22 stroke-linecap=%22round%22/><path d=%22M285 100 L195 245 h100 L225 412%22 fill=%22none%22 stroke=%22%2300FF88%22 stroke-width=%2226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
-    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TempoTrainer">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSJub25lIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMCIgZmlsbD0iIzFBMUExQSIvPjxwYXRoIGQ9Ik0xMTAgMjU2aDI5MiIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjM2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMTQwIDE2MHYxOTJNODAgMTk1djEyMiIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjMyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMzcyIDE2MHYxOTJNNDMyIDE5NXYxMjIiIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjMyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMjg1IDEwMCBMMTk1IDI0NSBoMTAwIEwyMjUgNDEyIiBmaWxsPSJub25lIiBzdHJva2U9IiMwMEZGODgiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSJub25lIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMCIgZmlsbD0iIzFBMUExQSIvPjxwYXRoIGQ9Ik0xMTAgMjU2aDI5MiIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjM2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMTQwIDE2MHYxOTJNODAgMTk1djEyMiIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjMyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMzcyIDE2MHYxOTJNNDMyIDE5NXYxMjIiIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjMyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMjg1IDEwMCBMMTk1IDI0NSBoMTAwIEwyMjUgNDEyIiBmaWxsPSJub25lIiBzdHJva2U9IiMwMEZGODgiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==">
+
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <style>
@@ -20,7 +27,6 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); margin: 0; padding: 15px; transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1); display: flex; justify-content: center; }
         .container { width: 100%; max-width: 480px; background: white; padding: 25px; border-radius: 24px; box-shadow: var(--card-shadow); box-sizing: border-box; }
         
-        /* App 頂部 UI 視覺設計 */
         .app-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 25px; }
         .app-icon { width: 70px; height: 70px; background: var(--primary-dark); border-radius: 18px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 15px rgba(0,0,0,0.2); margin-bottom: 12px; }
         .app-title { font-size: 1.4rem; font-weight: 800; color: var(--primary-dark); margin: 0; letter-spacing: 0.5px; }
@@ -32,26 +38,22 @@
         input, select, button { padding: 12px; font-size: 1rem; border: 2px solid #e2e8f0; border-radius: 12px; box-sizing: border-box; width: 100%; transition: all 0.2s; }
         input:focus, select:focus { border-color: var(--primary-dark); outline: none; }
         
-        /* 執行中主要面板 */
         .status { font-size: 1.8rem; font-weight: 800; margin: 15px 0; min-height: 55px; text-align: center; }
         .counter { font-size: 5rem; font-weight: 900; margin: 5px 0; color: var(--primary-dark); text-align: center; letter-spacing: -2px; }
         .sub-status { font-size: 1.4rem; font-weight: 700; margin: 10px 0; min-height: 35px; text-align: center; }
         
         .btn-start { background-color: var(--primary-dark); color: white; font-weight: 700; font-size: 1.2rem; border: none; padding: 16px; cursor: pointer; border-radius: 14px; box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
         
-        /* 組間互動確認大按鈕 */
         .confirm-box { display: none; flex-direction: column; gap: 12px; margin: 20px 0; }
         .btn-large { padding: 18px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 16px; cursor: pointer; text-align: center; box-shadow: 0 6px 12px rgba(0,0,0,0.05); }
         .btn-keep { background-color: #10b981; color: white; }
         .btn-change { background-color: #f59e0b; color: white; }
         
-        /* 次數即時增減面板 */
         .modifier-panel { display: none; align-items: center; justify-content: center; gap: 20px; margin: 20px 0; background: #edf2f7; padding: 20px; border-radius: 18px; }
         .btn-calc { width: 70px; height: 70px; font-size: 2.2rem; font-weight: 900; background: white; border: 2px solid #cbd5e0; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .display-calc { font-size: 3rem; font-weight: 900; color: var(--primary-dark); min-width: 80px; text-align: center; }
         .btn-confirm-change { background: var(--primary-dark); color: white; font-weight: 700; border-radius: 12px; padding: 12px; margin-top: 10px; width: 100%; border: none; cursor: pointer; display: none; }
 
-        /* 雙格式數據匯出控制區 */
         .export-group { display: none; flex-direction: column; gap: 10px; margin-top: 15px; }
         .btn-export-excel { background-color: #16a34a; color: white; border: none; font-weight: 700; font-size: 1.1rem; padding: 14px; cursor: pointer; border-radius: 14px; box-shadow: 0 5px 15px rgba(22, 163, 74, 0.25); }
         .btn-export-txt { background-color: #4b5563; color: white; border: none; font-weight: 700; font-size: 1.1rem; padding: 14px; cursor: pointer; border-radius: 14px; box-shadow: 0 5px 15px rgba(75, 85, 99, 0.25); }
@@ -59,7 +61,6 @@
         
         .log-item { background: white; padding: 12px; margin: 8px 0; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); font-size: 0.9rem; border-left: 4px solid var(--primary-dark); font-weight: 500; }
         
-        /* 沉浸式訓練環境色彩切換 */
         body.prepare { --bg-color: #fffbeb; } body.prepare .status { color: #b45309; } body.prepare .counter { color: #d97706; }
         body.push { --bg-color: #fff5f5; } body.push .status { color: #c53030; } body.push .sub-status { color: var(--pulse-red); }
         body.eccentric { --bg-color: #f0fdf4; } body.eccentric .status { color: #166534; } body.eccentric .sub-status { color: #15803d; }
@@ -70,7 +71,6 @@
 <body>
 
 <div class="container">
-    
     <div class="app-header">
         <div class="app-icon">
             <svg width="42" height="42" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -155,7 +155,6 @@
     <div class="section" style="margin-top: 25px;">
         <h3>📊 訓練歷史記錄</h3>
         <div id="logContainer"></div>
-        
         <div id="exportGroup" class="export-group">
             <button class="btn-export-excel" onclick="exportTodayExcel()">📊 匯出 Excel 試算表 (.xlsx)</button>
             <button class="btn-export-txt" onclick="exportTodayLog()">📄 匯出文字報告 (.txt)</button>
@@ -180,7 +179,6 @@
     let appState = 'PREPARE';
     let tempCalcReps = 12;
 
-    // Web Audio API 音效調節系統（階梯式音頻，根治聽覺混亂）
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     
     function playEnhancedSound(type, freq, duration) {
@@ -218,7 +216,6 @@
             pump: { push: 2, hold: 2, lower: 2, pause: 1 }
         }[mode];
         
-        // 針對 PUSH, HOLD, LOWER 指配完全不同的音波與音頻
         for(let i=1; i<=cfg.push; i++) timeline.push({ status: 'push', text: `💪 爆發推舉 PUSH (${i}/${cfg.push})`, wave: 'square', freq: 750 });
         for(let i=1; i<=cfg.hold; i++) timeline.push({ status: 'hold', text: `🛑 頂峰夾緊 HOLD (${i}/${cfg.hold})`, wave: 'sine', freq: 580 });
         for(let i=1; i<=cfg.lower; i++) timeline.push({ status: 'lower', text: `⏳ 慢速還原 LOWER (${i}/${cfg.lower})`, wave: 'triangle', freq: 400 });
@@ -242,7 +239,6 @@
         document.getElementById('setup-area').style.display = 'none';
         document.getElementById('actionBtn').style.display = 'none';
         
-        // 嚴格定時器機制，修正跳秒 Bug
         intervalId = setInterval(runTick, 1000);
     }
 
@@ -379,7 +375,6 @@
         newLog.innerText = logMsg;
         logContainer.insertBefore(newLog, logContainer.firstChild);
 
-        // JSON 數據化存儲結構，對接 Excel 轉換
         todayWorkoutSession.push({
             '訓練時間': timeStr,
             '訓練動作': selectedAction,
@@ -395,44 +390,5 @@
         document.body.className = '';
         document.getElementById('statusText').innerText = '🎉 該動作所有組數完成！';
         document.getElementById('mainDisplay').innerText = 'DONE';
-        document.getElementById('subStatusText').innerText = `總共完成了 ${targetSets} 組！核心充血完畢。`;
-        document.getElementById('setup-area').style.display = 'block';
-        document.getElementById('actionBtn').style.display = 'block';
-        document.getElementById('actionBtn').innerText = '開始下一個動作';
-        
-        document.getElementById('exportGroup').style.display = 'flex';
-    }
-
-    // 核心數據轉換與導出：真正生成 Microsoft Excel .xlsx 格式
-    function exportTodayExcel() {
-        if(todayWorkoutSession.length === 0) return;
-        const now = new Date();
-        const filename = `Gym_Workout_${now.getFullYear()}_${now.getMonth()+1}_${now.getDate()}.xlsx`;
-        
-        const worksheet = XLSX.utils.json_to_sheet(todayWorkoutSession);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "今日重訓記錄");
-        XLSX.writeFile(workbook, filename);
-    }
-
-    // 導出精美 TXT 文字排版檔
-    function exportTodayLog() {
-        if(todayWorkoutSession.length === 0) return;
-        const now = new Date();
-        const dateStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
-        
-        let fileContent = `=====================================\n🏋️‍♂️ 重量訓練全自動成果報告 (${dateStr})\n=====================================\n\n`;
-        todayWorkoutSession.forEach((item, index) => {
-            fileContent += `[記錄編號 ${index + 1}]\n• 訓練時間: ${item['訓練時間']}\n• 訓練動作: ${item['訓練動作']}\n• 完成進度: ${item['組數進度']}\n• 節奏模式: ${item['節奏模式']}\n• 實際完成下數: ${item['實際完成下數(Reps)']} Reps\n-------------------------------------\n`;
-        });
-        
-        const blob = new Blob([fileContent], { type: "text/plain;charset=utf-8" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `Gym_Report_${now.getFullYear()}_${now.getMonth()+1}_${now.getDate()}.txt`;
-        link.click();
-    }
-</script>
-</body>
-</html>
+        document.getElementById('subStatusText').innerText = `總共完成了 ${targetSets} 組！核心充血完畢
 
