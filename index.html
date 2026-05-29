@@ -1,18 +1,18 @@
-
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>重量訓練節奏控制器 Pro</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="TempoTrainer">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="display" content="standalone">
 
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSJub25lIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMCIgZmlsbD0iIzFBMUExQSIvPjxwYXRoIGQ9Ik0xMTAgMjU2aDI5MiIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjM2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMTQwIDE2MHYxOTJNODAgMTk1djEyMiIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjMyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMzcyIDE2MHYxOTJNNDMyIDE5NXYxMjIiIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjMyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMjg1IDEwMCBMMTk1IDI0NSBoMTAwIEwyMjUgNDEyIiBmaWxsPSJub25lIiBzdHJva2U9IiMwMEZGODgiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==">
-    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSJub25lIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMCIgZmlsbD0iIzFBMUExQSIvPjxwYXRoIGQ9Ik0xMTAgMjU2aDI5MiIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjM2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMTQwIDE2MHYxOTJNODAgMTk1djEyMiIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjMyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMzcyIDE2MHYxOTJNNDMyIDE5NXYxMjIiIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjMyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMjg1IDEwMCBMMTk1IDI0NSBoMTAwIEwyMjUgNDEyIiBmaWxsPSJub25lIiBzdHJva2U9IiMwMEZGODgiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSJub25lIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMCIgZmlsbD0iIzFBMUExQSIvPjxwYXRoIGQ9Ik0xMTAgMjU2aDI5MiIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjM2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMTQwIDE2MHYxOTJNODAgMTk1djEyMiIgc3Ryb2tlPSIjRkZGRkZGI"BzdHJva2Utd2lkdGg9IjMyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMzcyIDE2MHYxOTJNNDMyIDE5NXYxMjIiIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjMyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMjg1IDEwMCBMMTk1IDI0NSBoMTAwIEwyMjUgNDEyIiBmaWxsPSJub25lIiBzdHJva2U9IiMwMEZGODgiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==">
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
@@ -29,7 +29,6 @@
         
         .app-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 25px; }
         .app-icon { width: 70px; height: 70px; background: var(--primary-dark); border-radius: 18px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 15px rgba(0,0,0,0.2); margin-bottom: 12px; }
-        .app-title { font-size: 1.4rem; font-weight: 800; color: var(--primary-dark); margin: 0; letter-spacing: 0.5px; }
         
         .section { background: #f8f9fa; padding: 18px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #eef0f2; }
         h3 { font-size: 1.05rem; margin-top: 0; color: #495057; display: flex; align-items: center; gap: 6px; }
@@ -37,12 +36,16 @@
         .form-group label { font-weight: 600; margin-bottom: 6px; color: #6c757d; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
         input, select, button { padding: 12px; font-size: 1rem; border: 2px solid #e2e8f0; border-radius: 12px; box-sizing: border-box; width: 100%; transition: all 0.2s; }
         input:focus, select:focus { border-color: var(--primary-dark); outline: none; }
+        select, input[type="number"] { background-color: white; font-weight: 500; }
         
         .status { font-size: 1.8rem; font-weight: 800; margin: 15px 0; min-height: 55px; text-align: center; }
         .counter { font-size: 5rem; font-weight: 900; margin: 5px 0; color: var(--primary-dark); text-align: center; letter-spacing: -2px; }
         .sub-status { font-size: 1.4rem; font-weight: 700; margin: 10px 0; min-height: 35px; text-align: center; }
         
         .btn-start { background-color: var(--primary-dark); color: white; font-weight: 700; font-size: 1.2rem; border: none; padding: 16px; cursor: pointer; border-radius: 14px; box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
+        .btn-add { background-color: #e2e8f0; color: var(--primary-dark); border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; margin-top: 5px; border-radius: 10px; }
+        .btn-export-excel { background-color: #16a34a; color: white; border: none; font-weight: 700; font-size: 1.1rem; padding: 14px; cursor: pointer; border-radius: 14px; box-shadow: 0 5px 15px rgba(22, 163, 74, 0.25); }
+        .btn-export-txt { background-color: #4b5563; color: white; border: none; font-weight: 700; font-size: 1.1rem; padding: 14px; cursor: pointer; border-radius: 14px; box-shadow: 0 5px 15px rgba(75, 85, 99, 0.25); }
         
         .confirm-box { display: none; flex-direction: column; gap: 12px; margin: 20px 0; }
         .btn-large { padding: 18px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 16px; cursor: pointer; text-align: center; box-shadow: 0 6px 12px rgba(0,0,0,0.05); }
@@ -53,11 +56,7 @@
         .btn-calc { width: 70px; height: 70px; font-size: 2.2rem; font-weight: 900; background: white; border: 2px solid #cbd5e0; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .display-calc { font-size: 3rem; font-weight: 900; color: var(--primary-dark); min-width: 80px; text-align: center; }
         .btn-confirm-change { background: var(--primary-dark); color: white; font-weight: 700; border-radius: 12px; padding: 12px; margin-top: 10px; width: 100%; border: none; cursor: pointer; display: none; }
-
         .export-group { display: none; flex-direction: column; gap: 10px; margin-top: 15px; }
-        .btn-export-excel { background-color: #16a34a; color: white; border: none; font-weight: 700; font-size: 1.1rem; padding: 14px; cursor: pointer; border-radius: 14px; box-shadow: 0 5px 15px rgba(22, 163, 74, 0.25); }
-        .btn-export-txt { background-color: #4b5563; color: white; border: none; font-weight: 700; font-size: 1.1rem; padding: 14px; cursor: pointer; border-radius: 14px; box-shadow: 0 5px 15px rgba(75, 85, 99, 0.25); }
-        button:active { transform: scale(0.97); }
         
         .log-item { background: white; padding: 12px; margin: 8px 0; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); font-size: 0.9rem; border-left: 4px solid var(--primary-dark); font-weight: 500; }
         
@@ -71,6 +70,7 @@
 <body>
 
 <div class="container">
+    
     <div class="app-header">
         <div class="app-icon">
             <svg width="42" height="42" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -100,8 +100,29 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>2. 選擇動作</label>
+                <label>2. 從選單中尋找動作</label>
                 <select id="actionSelect"></select>
+            </div>
+        </div>
+
+        <div class="section" style="background: #eef2f7;">
+            <h3>➕ 加入自設特定位置動作</h3>
+            <div class="form-group">
+                <label>對應肌肉位置：</label>
+                <select id="customMuscle">
+                    <option value="胸肌-上胸">胸肌 (上胸)</option>
+                    <option value="胸肌-中下胸">胸肌 (中/下胸)</option>
+                    <option value="肩膊-前束">肩膊 (前束)</option>
+                    <option value="肩膊-中束">肩膊 (中束)</option>
+                    <option value="肩膊-後束">肩膊 (後束)</option>
+                    <option value="二頭肌-長頭外側">二頭肌 (長頭/外側)</option>
+                    <option value="二頭肌-短頭內側">二頭肌 (短頭/內側)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>輸入動作名稱：</label>
+                <input type="text" id="customActionName" placeholder="例如：自製橡筋帶外展飛鳥">
+                <button class="btn-add" onclick="addNewCustomAction()">儲存特定動作至選單</button>
             </div>
         </div>
 
@@ -163,14 +184,20 @@
 </div>
 
 <script>
+    // 內置核心數據庫
     const defaultActions = [
         { muscle: "胸肌-上胸", name: "【啞鈴】上斜啞鈴推舉 (Incline DB Press)" },
+        { muscle: "胸肌-上胸", name: "【啞鈴】上斜啞鈴飛鳥 (Incline DB Flyes)" },
         { muscle: "胸肌-中下胸", name: "【啞鈴】平躺啞鈴推舉 (Flat DB Press)" },
+        { muscle: "胸肌-中下胸", name: "【自重】標準標準俯臥撐 (Push-up)" },
+        { muscle: "肩膊-前束", name: "【啞鈴】坐姿啞鈴推舉 (Dumbbell Shoulder Press)" },
         { muscle: "肩膊-中束", name: "【啞鈴】站姿啞鈴側平舉 (DB Lateral Raise)" },
+        { muscle: "肩膊-後束", name: "【啞鈴】俯身啞鈴飛鳥 (Bent-over DB Reverse Flys)" },
+        { muscle: "二頭肌-長頭外側", name: "【啞鈴】斜椅啞鈴彎舉 (Incline DB Curl)" },
         { muscle: "二頭肌-長頭外側", name: "【啞鈴】站姿啞鈴錘式彎舉 (DB Hammer Curl)" }
     ];
 
-    let actionDatabase = [...defaultActions];
+    let actionDatabase = [];
     let intervalId = null, targetSets, targetReps, restDuration;
     let currentSet = 1, currentRep = 1, beatCount = 0, prepareSeconds = 5;
     let currentMode = 'normal';
@@ -193,19 +220,48 @@
         osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
 
-    window.onload = function() { filterTargetMuscles(); };
+    // 核心初始化：修復緩存與篩選讀取
+    window.onload = function() {
+        const cached = localStorage.getItem('custom_actions_v2');
+        actionDatabase = cached ? [...defaultActions, ...JSON.parse(cached)] : [...defaultActions];
+        filterTargetMuscles(); 
+    };
 
     function filterTargetMuscles() {
         const filterValue = document.getElementById('muscleFilter').value;
         const selectEl = document.getElementById('actionSelect');
         selectEl.innerHTML = '';
         const filtered = actionDatabase.filter(act => filterValue === 'all' || act.muscle === filterValue);
+        
         filtered.forEach(act => {
             const opt = document.createElement('option');
             opt.value = act.name;
             opt.innerText = `[${act.muscle.split('-')[1]}] ${act.name}`;
             selectEl.appendChild(opt);
         });
+    }
+
+    // 重新補齊的實時新增自設動作函數
+    function addNewCustomAction() {
+        const nameInput = document.getElementById('customActionName');
+        const muscleType = document.getElementById('customMuscle').value;
+        const actionName = nameInput.value.trim();
+        if (!actionName) { alert('請先輸入動作名稱！'); return; }
+        
+        const newAction = { muscle: muscleType, name: `【自設】${actionName}` };
+        actionDatabase.push(newAction);
+        
+        // 獨立緩存自設動作
+        const cached = localStorage.getItem('custom_actions_v2');
+        let customList = cached ? JSON.parse(cached) : [];
+        customList.push(newAction);
+        localStorage.setItem('custom_actions_v2', JSON.stringify(customList));
+        
+        nameInput.value = ''; 
+        document.getElementById('muscleFilter').value = muscleType; 
+        filterTargetMuscles(); 
+        document.getElementById('actionSelect').value = newAction.name;
+        alert(`成功將特定動作「${actionName}」加入選單！`);
     }
 
     function generateRepTimeline(mode) {
@@ -240,6 +296,7 @@
         document.getElementById('actionBtn').style.display = 'none';
         
         intervalId = setInterval(runTick, 1000);
+        runTick();
     }
 
     function runTick() {
@@ -376,11 +433,7 @@
         logContainer.insertBefore(newLog, logContainer.firstChild);
 
         todayWorkoutSession.push({
-            '訓練時間': timeStr,
-            '訓練動作': selectedAction,
-            '組數進度': `第 ${currentSet} 組 / 共 ${targetSets} 組`,
-            '節奏模式': modeName,
-            '實際完成下數(Reps)': repsDone
+            '訓練時間': timeStr, '訓練動作': selectedAction, '組數進度': `第 ${currentSet} 組 / 共 ${targetSets} 組`, '節奏模式': modeName, '實際完成下數(Reps)': repsDone
         });
     }
 
@@ -390,5 +443,37 @@
         document.body.className = '';
         document.getElementById('statusText').innerText = '🎉 該動作所有組數完成！';
         document.getElementById('mainDisplay').innerText = 'DONE';
-        document.getElementById('subStatusText').innerText = `總共完成了 ${targetSets} 組！核心充血完畢
+        document.getElementById('subStatusText').innerText = `總共完成了 ${targetSets} 組！核心充血完畢。`;
+        document.getElementById('setup-area').style.display = 'block';
+        document.getElementById('actionBtn').style.display = 'block';
+        document.getElementById('actionBtn').innerText = '開始下一個動作';
+        document.getElementById('exportGroup').style.display = 'flex';
+    }
 
+    function exportTodayExcel() {
+        if(todayWorkoutSession.length === 0) return;
+        const now = new Date();
+        const filename = `Gym_Workout_${now.getFullYear()}_${now.getMonth()+1}_${now.getDate()}.xlsx`;
+        const worksheet = XLSX.utils.json_to_sheet(todayWorkoutSession);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "今日重訓記錄");
+        XLSX.writeFile(workbook, filename);
+    }
+
+    function exportTodayLog() {
+        if(todayWorkoutSession.length === 0) return;
+        const now = new Date();
+        const dateStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
+        let fileContent = `=====================================\n🏋️‍♂️ 重量訓練全自動成果報告 (${dateStr})\n=====================================\n\n`;
+        todayWorkoutSession.forEach((item, index) => {
+            fileContent += `[記錄編號 ${index + 1}]\n• 訓練時間: ${item['訓練時間']}\n• 訓練動作: ${item['訓練動作']}\n• 完成進度: ${item['組數進度']}\n• 節奏模式: ${item['節奏模式']}\n• 實際完成下數: ${item['實際完成下數(Reps)']} Reps\n-------------------------------------\n`;
+        });
+        const blob = new Blob([fileContent], { type: "text/plain;charset=utf-8" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Gym_Report_${now.getFullYear()}_${now.getMonth()+1}_${now.getDate()}.txt`;
+        link.click();
+    }
+</script>
+</body>
+</html>
