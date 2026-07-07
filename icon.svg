@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <!-- 深色圓角底框 -->
+    <rect width="512" height="512" rx="110" fill="#1A1A1A"/>
+    <!-- 螢光綠 TEMPO 字樣 -->
+    <text x="256" y="120" fill="#00FF88" font-family="Arial, sans-serif" font-weight="900" font-size="72" text-anchor="middle" letter-spacing="6">TEMPO</text>
+    <!-- 經典啞鈴桿子 -->
+    <path d="M120 270 h272" stroke="#FFFFFF" stroke-width="36" stroke-linecap="round"/>
+    <!-- 啞鈴左邊槓片 -->
+    <path d="M150 174 v192 M90 209 v122" stroke="#FFFFFF" stroke-width="32" stroke-linecap="round"/>
+    <!-- 啞鈴右邊槓片 -->
+    <path d="M362 174 v192 M422 209 v122" stroke="#FFFFFF" stroke-width="32" stroke-linecap="round"/>
+    <!-- 下方節奏心跳波浪 -->
+    <path d="M160 400 L210 400 L240 340 L270 440 L300 400 L352 400" fill="none" stroke="#00FF88" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
