@@ -31,8 +31,14 @@
         .app-icon { width: 80px; height: 80px; margin-bottom: 12px; border-radius: 20px; box-shadow: 0 6px 15px rgba(0,0,0,0.2); background: #1a1a1a; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .app-icon svg { width: 100%; height: 100%; }
 
-        .install-btn { background-color: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; margin-bottom: 20px; cursor: pointer; display: none; width: 100%; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3); }
-
+        
+        .install-btn { 
+    background-color: #2563eb; color: white; border: none; padding: 10px 20px; 
+    border-radius: 20px; font-weight: bold; margin-bottom: 20px; cursor: pointer; 
+    display: block; /* 👈 這裡改成 block */
+    width: 100%; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3); 
+}
+        
         .section { background: #f8f9fa; padding: 18px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #eef0f2; }
         h3 { font-size: 1.05rem; margin-top: 0; color: #495057; display: flex; align-items: center; gap: 6px; }
         .form-group { margin-bottom: 14px; display: flex; flex-direction: column; }
@@ -175,36 +181,39 @@
 </div>
 
 <script>
-    /* === PWA 安裝按鈕與提示邏輯 === */
+        /* === PWA 安裝按鈕與提示邏輯 (萬無一失版) === */
     let deferredPrompt;
     const installBtn = document.getElementById('installAppBtn');
     
-    // 判斷是否為獨立 App 模式 (已安裝)
+    // 判斷是否已經是安裝後的獨立 App (如果已安裝，就隱藏按鈕)
     const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
     const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
-    // Android/Chrome 攔截安裝事件
+    if (isStandalone) {
+        installBtn.style.display = 'none';
+    } else {
+        installBtn.style.display = 'block'; // 確保網頁版一定看得到按鈕
+    }
+
+    // 攔截 Android 的自動安裝事件
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
-        deferredPrompt = e;
-        if (!isStandalone) installBtn.style.display = 'block';
+        deferredPrompt = e; // 把事件存起來，等使用者按按鈕時觸發
     });
-
-    // 如果是 iOS 且尚未安裝，主動顯示按鈕
-    if (isIos && !isStandalone) {
-        installBtn.style.display = 'block';
-    }
 
     installBtn.addEventListener('click', async () => {
         if (deferredPrompt) {
-            // Android 觸發安裝
+            // Android 完美支援一鍵安裝的情況
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
             if (outcome === 'accepted') installBtn.style.display = 'none';
             deferredPrompt = null;
         } else if (isIos) {
-            // iOS 彈出教學
-            alert('【iOS 用戶安裝提示】\n請點擊瀏覽器正下方的「分享」按鈕 📤\n(方塊往上的箭頭)\n\n然後往下滑選擇「加入主畫面」即可將此 App 安裝到桌面！');
+            // iOS 蘋果用戶專屬手動教學
+            alert('【🍏 iOS 蘋果用戶安裝教學】\n\n1️⃣ 點擊瀏覽器正下方的「分享 📤」按鈕 (方塊往上的箭頭)\n2️⃣ 往下滑，點選「加入主畫面 ➕」\n3️⃣ 點擊右上角的「新增」即可！');
+        } else {
+            // Android 用戶但未觸發自動安裝時的備用教學
+            alert('【🤖 Android 用戶安裝教學】\n\n請點擊瀏覽器右上角的「選單 (⋮ 或 ⋯)」\n然後選擇「加到主畫面」或「安裝應用程式」即可！');
         }
     });
 
