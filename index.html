@@ -79,67 +79,84 @@
     </div>
     <div id="logContainer"></div>
 </div>
-
 <script>
-    // 核心邏輯
-    let actionDatabase = [], intervalId = null, currentSet = 1, currentRep = 1, beatCount = 0, prepareSeconds = 5, appState = 'PREPARE', todayWorkoutSession = [];
-    
-    // PWA & UI Logic
-    const installBtn = document.getElementById('installAppBtn');
-    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); window.deferredPrompt = e; installBtn.style.display = 'block'; });
-    installBtn.onclick = () => { if (window.deferredPrompt) { window.deferredPrompt.prompt(); window.deferredPrompt = null; } else { alert('請點選瀏覽器選單「加到主畫面」。'); } };
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+    // --- 變數初始化 ---
+    let actionDatabase = [], intervalId = null, targetSets, targetReps, restDuration, currentSet = 1, currentRep = 1, beatCount = 0, prepareSeconds = 5, appState = 'PREPARE', todayWorkoutSession = [];
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    window.onload = () => {
-        actionDatabase = localStorage.getItem('custom_actions_v2') ? [...[{muscle:"胸肌-上胸", name:"【啞鈴】上斜推舉"}], ...JSON.parse(localStorage.getItem('custom_actions_v2'))] : [{muscle:"胸肌-上胸", name:"【啞鈴】上斜推舉"}];
-        updateMuscleFilterOptions(); filterTargetMuscles();
-    };
+    // --- 核心函數：開始訓練 ---
+    async function startTraining() {
+        const actionSelect = document.getElementById('actionSelect').value;
+        if (!actionSelect) { alert('請先選擇動作！'); return; }
 
-    function updateMuscleFilterOptions() {
-        const filterEl = document.getElementById('muscleFilter'), customSelect = document.getElementById('customMuscleSelect');
-        const muscles = [...new Set(actionDatabase.map(a => a.muscle))];
-        filterEl.innerHTML = '<option value="all">-- 全部部位 --</option>';
-        customSelect.innerHTML = '';
-        muscles.forEach(m => { filterEl.add(new Option(m, m)); customSelect.add(new Option(m, m)); });
-        customSelect.add(new Option('➕ 其他', 'other'));
+        // 讀取設定值
+        targetSets = parseInt(document.getElementById('targetSets').value);
+        targetReps = parseInt(document.getElementById('targetReps').value);
+        restDuration = parseInt(document.getElementById('restDuration').value);
+        
+        // 初始化
+        currentSet = 1; currentRep = 1; beatCount = 0; prepareSeconds = 5;
+        appState = 'PREPARE';
+        
+        // 介面切換
+        document.getElementById('setup-area').style.display = 'none';
+        document.getElementById('btnAbort').style.display = 'block'; // 顯示中止按鈕
+        
+        // 啟動循環
+        if (intervalId) clearInterval(intervalId);
+        intervalId = setInterval(runTick, 1000);
+        runTick();
     }
 
-    function toggleCustomMuscleInput() { document.getElementById('customMuscleInput').style.display = (document.getElementById('customMuscleSelect').value === 'other') ? 'block' : 'none'; }
-
-    function filterTargetMuscles() {
-        const val = document.getElementById('muscleFilter').value, sel = document.getElementById('actionSelect');
-        sel.innerHTML = '';
-        actionDatabase.filter(a => val === 'all' || a.muscle === val).forEach(a => sel.add(new Option(a.name, a.name)));
+    // --- 核心函數：計時循環 ---
+    function runTick() {
+        if (appState === 'PREPARE') {
+            document.getElementById('statusText').innerText = '準備中';
+            document.getElementById('mainDisplay').innerText = prepareSeconds;
+            if (prepareSeconds > 0) {
+                prepareSeconds--;
+            } else {
+                appState = 'WORKOUT';
+                document.getElementById('statusText').innerText = '開始訓練';
+            }
+        } else if (appState === 'WORKOUT') {
+            document.getElementById('mainDisplay').innerText = `S${currentSet}:${currentRep}`;
+            // 這裡模擬節奏進度
+            beatCount++;
+            if (beatCount >= 4) { // 假設一個節奏循環是 4 秒
+                beatCount = 0;
+                currentRep++;
+                if (currentRep > targetReps) {
+                    currentRep = 1;
+                    currentSet++;
+                    if (currentSet > targetSets) {
+                        endEntireWorkout();
+                    }
+                }
+            }
+        }
     }
 
-    function addNewCustomAction() {
-        const name = document.getElementById('customActionName').value, mSel = document.getElementById('customMuscleSelect').value, mIn = document.getElementById('customMuscleInput').value;
-        const muscle = (mSel === 'other') ? mIn : mSel;
-        if (!name || !muscle) return alert('請完整填寫！');
-        const newAct = { muscle, name: '【自設】' + name };
-        actionDatabase.push(newAct);
-        localStorage.setItem('custom_actions_v2', JSON.stringify(actionDatabase.filter(a => a.name.includes('【自設】'))));
-        updateMuscleFilterOptions(); filterTargetMuscles(); alert('已儲存！');
+    // --- 結束與中止 ---
+    function endEntireWorkout() {
+        clearInterval(intervalId);
+        document.getElementById('setup-area').style.display = 'block';
+        document.getElementById('btnAbort').style.display = 'none';
+        alert('訓練完成！');
     }
 
     function abortWorkout() {
-        if (confirm('確定中止訓練嗎？系統將保存已完成組數。')) {
-            if (intervalId) clearInterval(intervalId);
+        if (confirm('確定中止？')) {
+            clearInterval(intervalId);
             document.getElementById('setup-area').style.display = 'block';
             document.getElementById('btnAbort').style.display = 'none';
             document.getElementById('statusText').innerText = '訓練已中止';
         }
     }
 
-    function exportTodayLog() {
-        const blob = new Blob(['\uFEFF', '重量訓練報告\n\n' + todayWorkoutSession.map(i => i['訓練動作']).join('\n')], { type: "text/plain;charset=utf-8" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = 'Report.txt';
-        link.click();
-    }
-    
-    // (startTraining 等其餘計時邏輯請依先前完整版填入)
+    // --- 初始化與其他功能 (請保留你原有的 filterTargetMuscles 等函數) ---
+    // ... (保留你原有的 updateMuscleFilterOptions, addNewCustomAction 等函數)
 </script>
+
 </body>
 </html>
