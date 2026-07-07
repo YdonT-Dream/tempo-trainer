@@ -65,72 +65,377 @@
 </div>
 
 <script>
-    // PWA 安裝邏輯
+  /* === PWA 安裝按鈕與提示邏輯 === */
     let deferredPrompt;
     const installBtn = document.getElementById('installAppBtn');
-    window.addEventListener('beforeinstallprompt', (e) => { deferredPrompt = e; installBtn.style.display = 'block'; });
-    installBtn.onclick = () => {
-        if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; }
-        else { alert('如無法安裝，請點選瀏覽器選單「加到主畫面」。'); }
-    };
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+    
+    // 判斷是否為獨立 App 模式 (已安裝)
+    const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+    const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
-    // 訓練邏輯
-    let actionDatabase = [], intervalId = null, currentSet = 1, currentRep = 1, beatCount = 0, prepareSeconds = 5, appState = 'PREPARE';
-    const defaultActions = [{ muscle: "胸肌-上胸", name: "【啞鈴】上斜啞鈴推舉" }, { muscle: "二頭肌", name: "【啞鈴】彎舉" }];
+    // Android/Chrome 攔截安裝事件
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (!isStandalone) installBtn.style.display = 'block';
+    });
+
+    // 如果是 iOS 且尚未安裝，主動顯示按鈕
+    if (isIos && !isStandalone) {
+        installBtn.style.display = 'block';
+    }
+
+    installBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            // Android 觸發安裝
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') installBtn.style.display = 'none';
+            deferredPrompt = null;
+        } else if (isIos) {
+            // iOS 彈出教學
+            alert('【iOS 用戶安裝提示】\n請點擊瀏覽器正下方的「分享」按鈕 📤\n(方塊往上的箭頭)\n\n然後往下滑選擇「加入主畫面」即可將此 App 安裝到桌面！');
+        }
+    });
+
+    /* === Service Worker 註冊 === */
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .catch(err => console.log('SW Error: ', err));
+        });
+    }
+
+    /* === Screen Wake Lock (螢幕常亮) === */
+    let wakeLock = null;
+    async function requestWakeLock() {
+        if ('wakeLock' in navigator) {
+            try { wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
+        }
+    }
+    function releaseWakeLock() {
+        if (wakeLock !== null) { wakeLock.release().then(() => wakeLock = null); }
+    }
+    document.addEventListener('visibilitychange', async () => {
+        if (wakeLock !== null && document.visibilityState === 'visible') { await requestWakeLock(); }
+    });
+
+    /* === 核心資料庫與邏輯 === */
+    const defaultActions = [
+        { muscle: "胸肌-上胸", name: "【啞鈴】上斜啞鈴推舉 (Incline DB Press)" },
+        { muscle: "胸肌-中下胸", name: "【啞鈴】平躺啞鈴推舉 (Flat DB Press)" },
+        { muscle: "肩膊-前束", name: "【啞鈴】坐姿啞鈴推舉 (Dumbbell Shoulder Press)" },
+        { muscle: "肩膊-中束", name: "【啞鈴】站姿啞鈴側平舉 (DB Lateral Raise)" },
+        { muscle: "二頭肌-長頭外側", name: "【啞鈴】斜椅啞鈴彎舉 (Incline DB Curl)" }
+    ];
+
+    let actionDatabase = [];
+    let intervalId = null, targetSets, targetReps, restDuration;
+    let currentSet = 1, currentRep = 1, beatCount = 0, prepareSeconds = 5;
+    let currentMode = 'normal';
+    let modeTimeline = [];
+    let todayWorkoutSession = [];
+    let appState = 'PREPARE';
+    let tempCalcReps = 12;
+
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playEnhancedSound(type, freq, duration) {
+        if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.start(); osc.stop(audioCtx.currentTime + duration);
+    }
 
-    window.onload = () => {
-        actionDatabase = localStorage.getItem('custom_actions_v2') ? [...defaultActions, ...JSON.parse(localStorage.getItem('custom_actions_v2'))] : [...defaultActions];
-        updateMuscleFilterOptions(); filterTargetMuscles();
+    window.onload = function() {
+        const cached = localStorage.getItem('custom_actions_v2');
+        actionDatabase = cached ? [...defaultActions, ...JSON.parse(cached)] : [...defaultActions];
+        updateMuscleFilterOptions();
+        filterTargetMuscles(); 
     };
 
+    /* === 更新部位選單邏輯 (包含"其他"選項) === */
     function updateMuscleFilterOptions() {
-        const filterEl = document.getElementById('muscleFilter'), customSelect = document.getElementById('customMuscleSelect');
-        const muscles = [...new Set(actionDatabase.map(a => a.muscle))];
-        filterEl.innerHTML = '<option value="all">-- 全部部位 --</option>';
+        const filterEl = document.getElementById('muscleFilter');
+        const customSelect = document.getElementById('customMuscleSelect');
+        
+        const currentFilter = filterEl.value; 
+        const currentCustom = customSelect.value;
+        
+        const uniqueMuscles = [...new Set(actionDatabase.map(act => act.muscle))];
+        
+        // 1. 更新主篩選器
+        filterEl.innerHTML = '<option value="all">-- 全部肌肉部位 --</option>';
+        uniqueMuscles.forEach(muscle => {
+            const opt = document.createElement('option');
+            opt.value = muscle; opt.innerText = muscle; 
+            filterEl.appendChild(opt);
+        });
+
+        // 2. 更新自訂動作下拉選單
         customSelect.innerHTML = '';
-        muscles.forEach(m => { filterEl.add(new Option(m, m)); customSelect.add(new Option(m, m)); });
-        customSelect.add(new Option('➕ 其他', 'other'));
+        uniqueMuscles.forEach(muscle => {
+            const opt = document.createElement('option');
+            opt.value = muscle; opt.innerText = muscle; 
+            customSelect.appendChild(opt);
+        });
+        
+        // 加入"其他"選項
+        const otherOpt = document.createElement('option');
+        otherOpt.value = 'other'; 
+        otherOpt.innerText = '➕ 其他 (自行輸入新部位)';
+        otherOpt.style.fontWeight = 'bold';
+        otherOpt.style.color = '#2563eb';
+        customSelect.appendChild(otherOpt);
+
+        if (uniqueMuscles.includes(currentFilter)) filterEl.value = currentFilter;
+        if (uniqueMuscles.includes(currentCustom) || currentCustom === 'other') {
+            customSelect.value = currentCustom;
+        } else {
+            customSelect.value = uniqueMuscles[0];
+        }
+        toggleCustomMuscleInput();
     }
 
-    function toggleCustomMuscleInput() { document.getElementById('customMuscleInput').style.display = (document.getElementById('customMuscleSelect').value === 'other') ? 'block' : 'none'; }
-
-    function filterTargetMuscles() {
-        const val = document.getElementById('muscleFilter').value, sel = document.getElementById('actionSelect');
-        sel.innerHTML = '';
-        actionDatabase.filter(a => val === 'all' || a.muscle === val).forEach(a => sel.add(new Option(a.name, a.name)));
-    }
-
-    function addNewCustomAction() {
-        const name = document.getElementById('customActionName').value, mSel = document.getElementById('customMuscleSelect').value, mIn = document.getElementById('customMuscleInput').value;
-        const muscle = (mSel === 'other') ? mIn : mSel;
-        if (!name || !muscle) return alert('請完整填寫！');
-        const newAct = { muscle, name: '【自設】' + name };
-        actionDatabase.push(newAct);
-        localStorage.setItem('custom_actions_v2', JSON.stringify(actionDatabase.filter(a => a.name.includes('【自設】'))));
-        updateMuscleFilterOptions(); filterTargetMuscles(); alert('已儲存！');
-    }
-
-    function abortWorkout() {
-        if (confirm('確定中止訓練嗎？系統將保存已完成組數。')) {
-            if (intervalId) clearInterval(intervalId);
-            document.getElementById('playback-area').style.display = 'block';
-            document.getElementById('setup-area').style.display = 'block';
-            document.getElementById('btnAbort').style.display = 'none';
-            document.getElementById('statusText').innerText = '訓練已中止';
+    /* === 切換「其他」輸入框顯示/隱藏 === */
+    function toggleCustomMuscleInput() {
+        const select = document.getElementById('customMuscleSelect');
+        const input = document.getElementById('customMuscleInput');
+        if (select.value === 'other') {
+            input.style.display = 'block';
+            input.focus();
+        } else {
+            input.style.display = 'none';
         }
     }
 
-    function exportTodayLog() {
-        const blob = new Blob(['\uFEFF', '重量訓練報告\n\n' + todayWorkoutSession.map(i => i['訓練動作']).join('\n')], { type: "text/plain;charset=utf-8" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = 'Report.txt';
-        link.click();
+    function filterTargetMuscles() {
+        const filterValue = document.getElementById('muscleFilter').value;
+        const selectEl = document.getElementById('actionSelect');
+        selectEl.innerHTML = '';
+        const filtered = actionDatabase.filter(act => filterValue === 'all' || act.muscle === filterValue);
+        
+        filtered.forEach(act => {
+            const opt = document.createElement('option');
+            opt.value = act.name;
+            const displayMuscle = act.muscle.includes('-') ? act.muscle.split('-')[1] : act.muscle;
+            opt.innerText = `[${displayMuscle}] ${act.name}`;
+            selectEl.appendChild(opt);
+        });
     }
 
-    async function startTraining() { /* 邏輯同前 */ }
+    /* === 儲存自訂動作邏輯更新 === */
+    function addNewCustomAction() {
+        const nameInput = document.getElementById('customActionName');
+        const selectEl = document.getElementById('customMuscleSelect');
+        const textInputEl = document.getElementById('customMuscleInput');
+        
+        const actionName = nameInput.value.trim();
+        let muscleType = selectEl.value;
+        
+        // 如果使用者選擇了「其他」，則取隱藏輸入框的值
+        if (muscleType === 'other') {
+            muscleType = textInputEl.value.trim();
+            if (!muscleType) { alert('請輸入全新的肌肉部位名稱！'); return; }
+        }
+        
+        if (!actionName) { alert('請先輸入動作名稱！'); return; }
+        
+        const newAction = { muscle: muscleType, name: `【自設】${actionName}` };
+        actionDatabase.push(newAction);
+        
+        const cached = localStorage.getItem('custom_actions_v2');
+        let customList = cached ? JSON.parse(cached) : [];
+        customList.push(newAction);
+        localStorage.setItem('custom_actions_v2', JSON.stringify(customList));
+        
+        nameInput.value = ''; 
+        textInputEl.value = '';
+        
+        updateMuscleFilterOptions();
+        
+        // 自動切換到剛才新增的部位與動作
+        document.getElementById('muscleFilter').value = muscleType; 
+        document.getElementById('customMuscleSelect').value = muscleType;
+        toggleCustomMuscleInput();
+        filterTargetMuscles(); 
+        
+        document.getElementById('actionSelect').value = newAction.name;
+        alert(`成功將「${muscleType}」的動作「${actionName}」加入選單！`);
+    }
+
+    /* === 節奏與計時核心邏輯 === */
+    function generateRepTimeline(mode) {
+        let timeline = [];
+        const cfg = {
+            normal: { push: 1, hold: 1, lower: 2 },
+            eccentric: { push: 1, hold: 1, lower: 3 },
+            pump: { push: 2, hold: 2, lower: 2, pause: 1 }
+        }[mode];
+        
+        for(let i=1; i<=cfg.push; i++) timeline.push({ status: 'push', text: `💪 爆發推舉 PUSH (${i}/${cfg.push})`, wave: 'square', freq: 750 });
+        for(let i=1; i<=cfg.hold; i++) timeline.push({ status: 'hold', text: `🛑 頂峰夾緊 HOLD (${i}/${cfg.hold})`, wave: 'sine', freq: 580 });
+        for(let i=1; i<=cfg.lower; i++) timeline.push({ status: 'lower', text: `⏳ 慢速還原 LOWER (${i}/${cfg.lower})`, wave: 'triangle', freq: 400 });
+        if(cfg.pause) { for(let i=1; i<=cfg.pause; i++) timeline.push({ status: 'hold', text: `底部停頓 PAUSE`, wave: 'sine', freq: 350 }); }
+        return timeline;
+    }
+
+    async function startTraining() {
+        if(!document.getElementById('actionSelect').value) { alert('請先選擇動作！'); return; }
+        if(intervalId) { clearInterval(intervalId); intervalId = null; }
+        
+        await requestWakeLock();
+
+        targetSets = parseInt(document.getElementById('targetSets').value);
+        targetReps = parseInt(document.getElementById('targetReps').value);
+        restDuration = parseInt(document.getElementById('restDuration').value);
+        currentMode = document.getElementById('trainMode').value;
+        modeTimeline = generateRepTimeline(currentMode);
+        
+        currentSet = 1; currentRep = 1; beatCount = 0; prepareSeconds = 5;
+        appState = 'PREPARE';
+        
+        document.getElementById('setup-area').style.display = 'none';
+        document.getElementById('actionBtn').style.display = 'none';
+        
+        intervalId = setInterval(runTick, 1000);
+        runTick();
+    }
+
+    function runTick() {
+        const selectedAction = document.getElementById('actionSelect').value;
+
+        if (appState === 'PREPARE') {
+            document.body.className = 'prepare';
+            document.getElementById('statusText').innerText = '準備倒數';
+            document.getElementById('mainDisplay').innerText = prepareSeconds;
+            document.getElementById('subStatusText').innerText = `第 ${currentSet} 組即將開始... (目標 ${targetReps} 下)`;
+            
+            if (prepareSeconds > 0) {
+                playEnhancedSound('sine', 440, 0.08); prepareSeconds--;
+            } else {
+                appState = 'WORKOUT'; prepareSeconds = 0;
+                playEnhancedSound('square', 880, 0.25);
+            }
+            return;
+        }
+
+        if (appState === 'WORKOUT') {
+            document.getElementById('mainDisplay').innerText = `S${currentSet} : ${currentRep}/${targetReps}`;
+            let currentStep = modeTimeline[beatCount];
+            
+            document.body.className = (currentStep.status === 'push') ? 'push' : (currentStep.status === 'hold' ? 'isometric' : 'eccentric');
+            document.getElementById('statusText').innerText = selectedAction;
+            document.getElementById('subStatusText').innerText = currentStep.text;
+            
+            playEnhancedSound(currentStep.wave, currentStep.freq, 0.12);
+            
+            beatCount++;
+            if (beatCount >= modeTimeline.length) {
+                beatCount = 0; currentRep++;
+                
+                if (currentRep > targetReps) {
+                    logCompletedSet(targetReps); 
+                    
+                    if (currentSet >= targetSets) {
+                        endEntireWorkout();
+                    } else {
+                        clearInterval(intervalId); intervalId = null;
+                        
+                        appState = 'ASK_USER';
+                        document.body.className = 'rest';
+                        document.getElementById('statusText').innerText = `🎉 第 ${currentSet} 組完成！`;
+                        document.getElementById('mainDisplay').innerText = '☕';
+                        document.getElementById('subStatusText').innerText = '請確認下一組的次數安排：';
+                        
+                        document.getElementById('btnKeep').innerText = `保持 ${targetReps} 下，開始休息`;
+                        document.getElementById('confirmBox').style.display = 'flex';
+                        tempCalcReps = targetReps;
+                        playEnhancedSound('sine', 523, 0.4); 
+                    }
+                }
+            }
+            return;
+        }
+
+        if (appState === 'REST') {
+            document.body.className = 'rest';
+            document.getElementById('statusText').innerText = '組間休息中 ☕';
+            document.getElementById('mainDisplay').innerText = `${prepareSeconds}s`;
+            document.getElementById('subStatusText').innerText = `下組預備：第 ${currentSet + 1} 組 / 目標 ${targetReps} 下`;
+            
+            if (prepareSeconds <= 3 && prepareSeconds > 0) playEnhancedSound('sine', 600, 0.08); 
+            
+            if (prepareSeconds > 0) {
+                prepareSeconds--;
+            } else {
+                currentSet++; currentRep = 1; beatCount = 0; appState = 'WORKOUT';
+                playEnhancedSound('square', 880, 0.25);
+            }
+        }
+    }
+
+    function chooseKeepReps() { hideConfirmUI(); enterRestCountdown(); }
+    function showModifierPanel() { document.getElementById('calcDisplay').innerText = tempCalcReps; document.getElementById('modifierPanel').style.display = 'flex'; document.getElementById('btnConfirmChange').style.display = 'block'; }
+    function adjustCalcReps(amount) { tempCalcReps += amount; if (tempCalcReps < 1) tempCalcReps = 1; document.getElementById('calcDisplay').innerText = tempCalcReps; playEnhancedSound('sine', 440, 0.05); }
+    function chooseChangedReps() { targetReps = tempCalcReps; hideConfirmUI(); enterRestCountdown(); }
+    function hideConfirmUI() { document.getElementById('confirmBox').style.display = 'none'; document.getElementById('modifierPanel').style.display = 'none'; document.getElementById('btnConfirmChange').style.display = 'none'; }
+    function enterRestCountdown() { appState = 'REST'; prepareSeconds = restDuration; intervalId = setInterval(runTick, 1000); runTick(); }
+
+    function logCompletedSet(repsDone) {
+        const selectedAction = document.getElementById('actionSelect').value;
+        const modeName = { normal: '正常訓練', eccentric: '離心訓練', pump: '充血訓練' }[currentMode];
+        const now = new Date();
+        const timeStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+        const logMsg = `⏱️ ${timeStr} - ${selectedAction} [第 ${currentSet}/${targetSets} 組 - ${modeName} 完成 ${repsDone}下]`;
+        const logContainer = document.getElementById('logContainer');
+        const newLog = document.createElement('div');
+        newLog.className = 'log-item'; newLog.innerText = logMsg;
+        logContainer.insertBefore(newLog, logContainer.firstChild);
+
+        todayWorkoutSession.push({ '訓練時間': timeStr, '訓練動作': selectedAction, '組數進度': `第 ${currentSet} 組 / 共 ${targetSets} 組`, '節奏模式': modeName, '實際完成下數': repsDone });
+    }
+
+    function endEntireWorkout() {
+        if(intervalId) { clearInterval(intervalId); intervalId = null; }
+        releaseWakeLock();
+        playEnhancedSound('square', 950, 0.6);
+        document.body.className = '';
+        document.getElementById('statusText').innerText = '🎉 該動作所有組數完成！';
+        document.getElementById('mainDisplay').innerText = 'DONE';
+        document.getElementById('subStatusText').innerText = `總共完成了 ${targetSets} 組！核心充血完畢。`;
+        document.getElementById('setup-area').style.display = 'block';
+        document.getElementById('actionBtn').style.display = 'block';
+        document.getElementById('actionBtn').innerText = '開始下一個動作';
+        document.getElementById('exportGroup').style.display = 'flex';
+    }
+
+    function exportTodayExcel() {
+        if(todayWorkoutSession.length === 0) return;
+        const now = new Date();
+        const filename = `Gym_Workout_${now.getFullYear()}_${now.getMonth()+1}_${now.getDate()}.xlsx`;
+        const worksheet = XLSX.utils.json_to_sheet(todayWorkoutSession);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "今日重訓記錄");
+        XLSX.writeFile(workbook, filename);
+    }
+
+    function exportTodayLog() {
+        if(todayWorkoutSession.length === 0) return;
+        const now = new Date();
+        let fileContent = `=====================================\n🏋️‍♂️ 重量訓練全自動成果報告\n=====================================\n\n`;
+        todayWorkoutSession.forEach((item, idx) => { fileContent += `[記錄 ${idx + 1}] ${item['訓練時間']} | ${item['訓練動作']} | ${item['組數進度']} | ${item['實際完成下數']} Reps\n`; });
+        const blob = new Blob([fileContent], { type: "text/plain;charset=utf-8" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Gym_Report_${now.getFullYear()}_${now.getMonth()+1}_${now.getDate()}.txt`;
+        link.click();
+    }
 </script>
 </body>
 </html>
