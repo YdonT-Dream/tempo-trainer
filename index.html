@@ -309,9 +309,7 @@
         osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
 
-    window.onload = () => {
-        actionDatabase = localStorage.getItem('custom_actions_v2') ? [...defaultActions, ...JSON.parse(localStorage.getItem('custom_actions_v2'))] : [...defaultActions];
-        updateMuscleFilterOptions(); filterTargetMuscles();
+
     window.onload = function() {
         const cached = localStorage.getItem('custom_actions_v2');
         actionDatabase = cached ? [...defaultActions, ...JSON.parse(cached)] : [...defaultActions];
