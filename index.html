@@ -109,6 +109,12 @@
         const blob = new Blob(['\uFEFF', '重量訓練報告\n\n' + todayWorkoutSession.map(i => i['訓練動作']).join('\n')], { type: "text/plain;charset=utf-8" });
         const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = 'Report.txt'; link.click();
     }
+
+
+
+
+
+    
 </script>
 
 
