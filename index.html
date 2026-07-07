@@ -5,129 +5,107 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TempoTrainer Pro</title>
     
-    <!-- PWA 與桌面啟動設定 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="TempoTrainer">
-    <!-- 整合式 Manifest -->
     <link rel="manifest" href='data:application/manifest+json,{"name":"TempoTrainer Pro","short_name":"TempoTrainer","start_url":"./index.html","display":"standalone","background_color":"%23ffffff","theme_color":"%231a1a1a","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/3061/3061349.png","sizes":"192x192","type":"image/png"}]}'>
 
     <style>
-        :root { --bg-color: #f4f6f9; --primary-dark: #1a1a1a; }
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; }
+        :root { --primary-dark: #1a1a1a; }
+        body { font-family: sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; }
         .container { max-width: 480px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .form-group { margin-bottom: 15px; }
-        select, input, button { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd; margin-top: 5px; box-sizing: border-box; }
-        .btn-start { background: var(--primary-dark); color: white; border: none; font-weight: bold; cursor: pointer; }
-        .status { font-size: 1.5rem; font-weight: 800; text-align: center; margin-bottom: 10px; }
-        .counter { font-size: 5rem; font-weight: 900; text-align: center; color: var(--primary-dark); }
-        #playback-area { display: none; }
+        .btn-large { width: 100%; padding: 20px; margin: 10px 0; border-radius: 15px; border: none; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
+        #playback-area, #confirm-area { display: none; text-align: center; }
+        .counter { font-size: 4rem; font-weight: 900; margin: 20px 0; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="setup-area">
-        <h3>🎯 選擇訓練動作</h3>
-        <div class="form-group">
-            <select id="muscleFilter" onchange="filterTargetMuscles()">
-                <option value="all">-- 全部部位 --</option>
-                <option value="胸肌">胸肌</option>
-                <option value="肩膊">肩膊</option>
-                <option value="二頭肌">二頭肌</option>
-                <option value="背肌">背肌</option>
-                <option value="腿部">腿部</option>
-                <option value="核心">核心</option>
-            </select>
+        <h3>🎯 設定訓練</h3>
+        <select id="actionSelect" style="width:100%; padding:10px;"></select>
+        <div style="margin: 15px 0;">
+            <label>目標次數</label>
+            <input type="number" id="repsInput" value="12" style="width:100%; padding:10px;">
         </div>
-        <select id="actionSelect"></select>
-        <hr>
-        <h3>➕ 新增自訂動作</h3>
-        <input type="text" id="customActionName" placeholder="動作名稱">
-        <button onclick="addNewCustomAction()">儲存動作</button>
-        <br><br>
-        <button class="btn-start" onclick="startTraining()">開始訓練</button>
+        <button class="btn-large" style="background:#1a1a1a; color:white;" onclick="startTraining()">開始訓練</button>
     </div>
 
     <div id="playback-area">
-        <div class="status" id="statusText">準備開始</div>
-        <div class="counter" id="mainDisplay">5</div>
-        <div id="subStatusText" style="text-align:center;">請準備...</div>
+        <div id="statusText">運動中...</div>
+        <div class="counter" id="mainDisplay">0</div>
+    </div>
+
+    <div id="confirm-area">
+        <h3>組數完成！</h3>
+        <button class="btn-large" style="background:#00ff88;" onclick="continueSet(true)">保持相同次數</button>
+        <button class="btn-large" style="background:#ffcc00;" onclick="showRepModifier()">修改次數</button>
+        <div id="modifier-box" style="display:none;">
+            <input type="number" id="newReps" value="12" style="padding:10px; width:50px;">
+            <button onclick="continueSet(false)">確認並繼續</button>
+        </div>
     </div>
 </div>
 
 <script>
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    
-    // 聲音系統：高低音明顯區分
-    const SOUNDS = {
-        push: { freq: 880, vol: 0.4, type: 'square' },
-        hold: { freq: 440, vol: 0.15, type: 'sine' },
-        lower: { freq: 220, vol: 0.3, type: 'triangle' }
-    };
+    let currentTargetReps = 12;
+    let completedReps = 0;
 
     function playSound(type) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
-        const s = SOUNDS[type];
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.type = s.type;
-        osc.frequency.setValueAtTime(s.freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(s.vol, audioCtx.currentTime);
+        const cfg = { push: [880, 0.4], hold: [440, 0.15], lower: [220, 0.3] };
+        osc.frequency.setValueAtTime(cfg[type][0], audioCtx.currentTime);
+        gain.gain.setValueAtTime(cfg[type][1], audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
         osc.start(); osc.stop(audioCtx.currentTime + 0.3);
     }
 
-    let actionDatabase = [
-        { muscle: "胸肌", name: "上斜啞鈴推舉" }, { muscle: "肩膊", name: "啞鈴側平舉" },
-        { muscle: "背肌", name: "啞鈴划船" }, { muscle: "腿部", name: "深蹲" }, { muscle: "核心", name: "平板支撐" }
-    ];
-
-    function filterTargetMuscles() {
-        const filter = document.getElementById('muscleFilter').value;
-        const select = document.getElementById('actionSelect');
-        select.innerHTML = '';
-        actionDatabase.forEach(act => {
-            if (filter === 'all' || act.muscle === filter) {
-                const opt = document.createElement('option');
-                opt.value = act.name; opt.innerText = `[${act.muscle}] ${act.name}`;
-                select.appendChild(opt);
-            }
-        });
-    }
-
-    function addNewCustomAction() {
-        const name = document.getElementById('customActionName').value;
-        const muscle = document.getElementById('muscleFilter').value === 'all' ? '其他' : document.getElementById('muscleFilter').value;
-        if(name) { 
-            actionDatabase.push({muscle, name}); 
-            filterTargetMuscles(); 
-            document.getElementById('customActionName').value = '';
-            alert('已新增'); 
-        }
-    }
-
-    // 精確計時器：使用閉包與 Date 比對誤差
-    let timerRef;
     function startTraining() {
+        currentTargetReps = parseInt(document.getElementById('repsInput').value);
         document.getElementById('setup-area').style.display = 'none';
         document.getElementById('playback-area').style.display = 'block';
-        runTimer(5);
+        runSet();
     }
 
-    function runTimer(seconds) {
-        document.getElementById('mainDisplay').innerText = seconds;
-        if(seconds > 0) {
-            playSound('hold');
-            timerRef = setTimeout(() => runTimer(seconds - 1), 1000);
-        } else {
-            document.getElementById('statusText').innerText = "訓練開始！";
-            // 這裡可以開始執行您的節奏迴圈邏輯
-        }
+    function runSet() {
+        completedReps = 0;
+        let beat = 0;
+        const seq = ['push', 'hold', 'lower', 'lower']; // 1:1:2 節奏
+        
+        let interval = setInterval(() => {
+            let state = seq[beat % 4];
+            playSound(state);
+            document.getElementById('statusText').innerText = state.toUpperCase();
+            
+            if (beat % 4 === 0) {
+                completedReps++;
+                document.getElementById('mainDisplay').innerText = completedReps;
+                if (completedReps > currentTargetReps) {
+                    clearInterval(interval);
+                    showConfirmArea();
+                }
+            }
+            beat++;
+        }, 1000);
     }
 
-    window.onload = filterTargetMuscles;
+    function showConfirmArea() {
+        document.getElementById('playback-area').style.display = 'none';
+        document.getElementById('confirm-area').style.display = 'block';
+    }
+
+    function showRepModifier() { document.getElementById('modifier-box').style.display = 'block'; }
+
+    function continueSet(keep) {
+        if (!keep) currentTargetReps = parseInt(document.getElementById('newReps').value);
+        document.getElementById('confirm-area').style.display = 'none';
+        document.getElementById('playback-area').style.display = 'block';
+        runSet();
+    }
 </script>
 </body>
 </html>
