@@ -11,11 +11,11 @@
     <style>
         body { font-family: sans-serif; background-color: #f4f6f9; margin: 0; padding: 15px; }
         .container { max-width: 480px; margin: auto; }
-        .section { background: white; padding: 15px; border-radius: 15px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .section { background: white; padding: 15px; border-radius: 15px; margin-bottom: 10px; }
         input, select, button { width: 100%; padding: 12px; margin-top: 8px; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; }
-        #playback-area, #confirm-area, #finish-area { display: none; height: 80vh; flex-direction: column; justify-content: center; align-items: center; }
+        #playback-area, #confirm-area { display: none; height: 80vh; flex-direction: column; justify-content: center; align-items: center; }
         .counter { font-size: 5rem; font-weight: 900; }
-        #logDisplay { font-size: 0.8rem; height: 100px; overflow-y: auto; border: 1px solid #eee; margin-top: 10px; }
+        #logDisplay { font-size: 0.9rem; height: 100px; overflow-y: auto; border: 1px solid #eee; padding: 5px; }
     </style>
 </head>
 <body>
@@ -50,19 +50,30 @@
     </div>
 
     <div id="confirm-area">
-        <h2 id="confirmTitle">組數完成！</h2>
+        <h2>組數完成！</h2>
         <button id="btnNext" style="background:#00ff88; padding:20px;">繼續下一組</button>
         <button id="btnModify" style="background:#ffcc00; padding:20px; margin-top:10px;">修改目標次數</button>
     </div>
 </div>
 
 <script>
-    // 1. 初始化資料庫
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     let db = [{m: "胸肌", a: "上斜啞鈴推舉"}, {m: "肩膊", a: "啞鈴側平舉"}];
     let logs = [];
-    let state = { totalSets: 3, currentSet: 1, targetReps: 12, beat: 0, isRunning: false };
+    let state = { totalSets: 3, currentSet: 1, targetReps: 12, isRunning: false };
 
-    // 2. 初始化選單
+    function playSound(type) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        const cfg = { push: [880, 0.4], hold: [440, 0.15], lower: [220, 0.3] };
+        osc.frequency.setValueAtTime(cfg[type][0], audioCtx.currentTime);
+        gain.gain.setValueAtTime(cfg[type][1], audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+    }
+
     function init() {
         const mFilter = document.getElementById('muscleFilter');
         const muscles = [...new Set(db.map(i => i.m))];
@@ -82,7 +93,6 @@
         if(m && a) { db.push({m, a}); init(); alert('已新增！'); }
     }
 
-    // 3. 訓練邏輯
     function startTraining() {
         state.totalSets = parseInt(document.getElementById('totalSets').value);
         state.targetReps = parseInt(document.getElementById('repsInput').value);
@@ -100,15 +110,19 @@
 
     function doBeat(current, beat) {
         if (!state.isRunning) return;
-        const seq = ['PUSH','HOLD','LOWER','LOWER'];
-        document.getElementById('statusText').innerText = seq[beat % 4];
+        const seq = ['push', 'hold', 'lower', 'lower'];
+        let type = seq[beat % 4];
+        playSound(type);
+        document.getElementById('statusText').innerText = type.toUpperCase();
+        
         if (beat % 4 === 0 && beat > 0) current++;
         document.getElementById('mainDisplay').innerText = current;
 
         if (current > state.targetReps) {
             state.isRunning = false;
+            let logMsg = `${document.getElementById('actionSelect').value}: 第${state.currentSet}組 ${state.targetReps}下`;
             logs.push({動作: document.getElementById('actionSelect').value, 組數: state.currentSet, 次數: state.targetReps});
-            document.getElementById('logDisplay').innerHTML = logs.map(l => `<div>${l.動作}: 第${l.組數}組 ${l.次數}下</div>`).join('');
+            document.getElementById('logDisplay').innerHTML += `<div>${logMsg}</div>`;
             document.getElementById('playback-area').style.display = 'none';
             document.getElementById('confirm-area').style.display = 'flex';
             return;
@@ -116,21 +130,15 @@
         setTimeout(() => doBeat(current, beat + 1), 1000);
     }
 
-    // 4. 控制按鈕
     document.getElementById('btnNext').onclick = () => {
         state.currentSet++;
         if (state.currentSet > state.totalSets) {
-            alert('訓練全部完成！');
+            alert('全部完成！');
             location.reload();
         } else {
             document.getElementById('confirm-area').style.display = 'none';
             runSet();
         }
-    };
-
-    document.getElementById('btnModify').onclick = () => {
-        let n = prompt("輸入新的目標次數", state.targetReps);
-        if (n) state.targetReps = parseInt(n);
     };
 
     function exportExcel() {
