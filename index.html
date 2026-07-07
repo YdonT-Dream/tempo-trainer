@@ -13,10 +13,10 @@
         body { font-family: sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; }
         .container { max-width: 480px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .section { margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 12px; }
-        select, input, button { width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
+        select, input, button { width: 100%; padding: 12px; margin-top: 8px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
         .btn-start { background: var(--primary-dark); color: white; border: none; font-weight: bold; cursor: pointer; }
         #playback-area, #confirm-area { display: none; text-align: center; }
-        .counter { font-size: 4rem; font-weight: 900; margin: 20px 0; }
+        .counter { font-size: 4rem; font-weight: 900; margin: 10px 0; }
     </style>
 </head>
 <body>
@@ -24,27 +24,28 @@
 <div class="container">
     <div id="setup-area">
         <div class="section">
-            <h3>🎯 選擇動作</h3>
+            <h3>🎯 選擇與新增動作</h3>
+            <label>肌肉部位</label>
             <select id="muscleFilter" onchange="filterTargetMuscles()">
-                <option value="all">-- 全部部位 --</option>
-                <option value="胸肌">胸肌</option>
-                <option value="肩膊">肩膊</option>
-                <option value="二頭肌">二頭肌</option>
-                <option value="背肌">背肌</option>
-                <option value="腿部">腿部</option>
-                <option value="核心">核心</option>
+                <option value="胸肌">胸肌</option><option value="肩膊">肩膊</option>
+                <option value="二頭肌">二頭肌</option><option value="背肌">背肌</option>
+                <option value="腿部">腿部</option><option value="核心">核心</option>
             </select>
-            <select id="actionSelect" style="margin-top:10px;"></select>
+            <select id="actionSelect"></select>
+            
+            <hr style="margin:20px 0;">
+            <input type="text" id="newMuscleInput" placeholder="輸入新部位名稱(例如:三頭肌)">
+            <input type="text" id="newActionInput" placeholder="輸入該部位動作名稱">
+            <button onclick="addNewCustomItem()">新增部位與動作</button>
         </div>
 
         <div class="section">
-            <h3>➕ 新增動作</h3>
-            <input type="text" id="customName" placeholder="動作名稱">
-            <button onclick="addNewAction()">儲存並加入列表</button>
-        </div>
-
-        <div class="section">
-            <h3>⚙️ 設定</h3>
+            <h3>⚙️ 訓練模式</h3>
+            <select id="trainMode">
+                <option value="normal">正常 (1:1:2)</option>
+                <option value="eccentric">離心 (1:1:3)</option>
+                <option value="pump">充血 (2:2:2)</option>
+            </select>
             <label>目標次數</label>
             <input type="number" id="repsInput" value="12">
             <button class="btn-start" onclick="startTraining()">開始訓練</button>
@@ -58,17 +59,18 @@
 
     <div id="confirm-area">
         <h3>組數完成！</h3>
-        <button style="padding:15px; background:#00ff88;" onclick="continueSet(true)">保持相同次數開始</button>
-        <button style="padding:15px; margin-top:10px;" onclick="showModifier()">修改次數</button>
+        <button style="padding:15px; background:#00ff88; width:100%;" onclick="continueSet(true)">保持次數，開始下一組</button>
+        <button style="padding:15px; margin-top:10px; width:100%;" onclick="showModifier()">修改次數</button>
         <div id="modifier-box" style="display:none; margin-top:10px;">
             <input type="number" id="newReps" value="12">
-            <button onclick="continueSet(false)">確認新次數並開始</button>
+            <button onclick="continueSet(false)">確認並繼續</button>
         </div>
     </div>
 </div>
 
 <script>
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // 預設動作庫
     let actionDatabase = [
         { muscle: "胸肌", name: "上斜啞鈴推舉" }, { muscle: "肩膊", name: "啞鈴側平舉" },
         { muscle: "背肌", name: "啞鈴划船" }, { muscle: "腿部", name: "深蹲" }, { muscle: "核心", name: "平板支撐" }
@@ -86,23 +88,33 @@
         osc.start(); osc.stop(audioCtx.currentTime + 0.3);
     }
 
+    // 篩選與更新部位選單
     function filterTargetMuscles() {
         const filter = document.getElementById('muscleFilter').value;
         const select = document.getElementById('actionSelect');
         select.innerHTML = '';
-        actionDatabase.forEach(act => {
-            if (filter === 'all' || act.muscle === filter) {
-                const opt = document.createElement('option');
-                opt.value = act.name; opt.innerText = `[${act.muscle}] ${act.name}`;
-                select.appendChild(opt);
-            }
+        actionDatabase.filter(a => a.muscle === filter).forEach(act => {
+            const opt = document.createElement('option');
+            opt.innerText = act.name;
+            select.appendChild(opt);
         });
     }
 
-    function addNewAction() {
-        const name = document.getElementById('customName').value;
-        const muscle = document.getElementById('muscleFilter').value === 'all' ? '其他' : document.getElementById('muscleFilter').value;
-        if(name) { actionDatabase.push({muscle, name}); filterTargetMuscles(); alert('已加入！'); }
+    // 新增部位與動作
+    function addNewCustomItem() {
+        const m = document.getElementById('newMuscleInput').value;
+        const a = document.getElementById('newActionInput').value;
+        if(m && a) {
+            actionDatabase.push({muscle: m, name: a});
+            // 更新下拉選單
+            const mFilter = document.getElementById('muscleFilter');
+            if(![...mFilter.options].some(o => o.value === m)) {
+                let opt = document.createElement('option');
+                opt.value = m; opt.innerText = m;
+                mFilter.appendChild(opt);
+            }
+            alert('已新增！');
+        }
     }
 
     function startTraining() {
@@ -113,14 +125,21 @@
 
     function runSet() {
         let target = parseInt(document.getElementById('repsInput').value);
+        let mode = document.getElementById('trainMode').value;
+        // 定義各模式節奏
+        const patterns = {
+            normal: ['push', 'hold', 'lower', 'lower'],
+            eccentric: ['push', 'hold', 'lower', 'lower', 'lower'],
+            pump: ['push', 'push', 'hold', 'hold', 'lower', 'lower']
+        };
+        const seq = patterns[mode];
         let completed = 0, beat = 0;
-        const seq = ['push', 'hold', 'lower', 'lower'];
         
         let interval = setInterval(() => {
-            let state = seq[beat % 4];
+            let state = seq[beat % seq.length];
             playSound(state);
             document.getElementById('statusText').innerText = state.toUpperCase();
-            if (beat % 4 === 0) {
+            if (beat % seq.length === 0) {
                 completed++;
                 document.getElementById('mainDisplay').innerText = completed;
                 if (completed > target) {
@@ -134,7 +153,6 @@
     }
 
     function showModifier() { document.getElementById('modifier-box').style.display = 'block'; }
-
     function continueSet(keep) {
         if (!keep) document.getElementById('repsInput').value = document.getElementById('newReps').value;
         document.getElementById('confirm-area').style.display = 'none';
