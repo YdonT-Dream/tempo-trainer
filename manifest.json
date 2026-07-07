@@ -1,0 +1,17 @@
+{
+  "name": "重量訓練節奏控制器 Pro",
+  "short_name": "TempoTrainer",
+  "description": "專業級重量訓練節奏計時與記錄工具",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f6f9",
+  "theme_color": "#1a1a1a",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ]
+}
