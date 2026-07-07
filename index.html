@@ -5,23 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>重量訓練節奏控制器 Pro</title>
     
+    <!-- PWA 與 Icon 設定 -->
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#1a1a1a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="TempoTrainer">
     <meta name="mobile-web-app-capable" content="yes">
-    <link rel="icon" type="image/svg+xml" href="./icon.svg">
     <meta name="display" content="standalone">
+    <link rel="icon" type="image/svg+xml" href="./icon.svg">
+    <link rel="apple-touch-icon" href="./icon.svg">
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <style>
-        :root { --bg-color: #f4f6f9; --primary-dark: #1a1a1a; --neon-green: #00ff88; --pulse-red: #ff3366; }
-        body { font-family: -apple-system, sans-serif; background-color: var(--bg-color); margin: 0; padding: 15px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 480px; background: white; padding: 25px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-        .app-icon { width: 80px; height: 80px; margin: 0 auto 12px; background: #1a1a1a; border-radius: 20px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .install-btn { background: #2563eb; color: white; border: none; padding: 12px; border-radius: 12px; width: 100%; font-weight: bold; margin-bottom: 20px; display: none; }
         :root { 
             --bg-color: #f4f6f9; 
             --primary-dark: #1a1a1a;
@@ -33,25 +30,16 @@
         .container { width: 100%; max-width: 480px; background: white; padding: 25px; border-radius: 24px; box-shadow: var(--card-shadow); box-sizing: border-box; }
         .app-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 25px; }
         
-        /* 將 SVG 內嵌的圖示樣式 */
-        .app-icon { width: 80px; height: 80px; margin-bottom: 12px; border-radius: 20px; box-shadow: 0 6px 15px rgba(0,0,0,0.2); background: #1a1a1a; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .app-icon svg { width: 100%; height: 100%; }
-
-        .install-btn { background-color: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; margin-bottom: 20px; cursor: pointer; display: none; width: 100%; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3); }
-
+        /* 替換為讀取 SVG 圖檔 */
+        .app-icon-img { width: 72px; height: 72px; margin-bottom: 12px; border-radius: 18px; box-shadow: 0 6px 15px rgba(0,0,0,0.2); }
+        
         .section { background: #f8f9fa; padding: 18px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #eef0f2; }
-        input, select, button { padding: 12px; font-size: 1rem; border: 2px solid #e2e8f0; border-radius: 12px; width: 100%; margin-top: 8px; box-sizing: border-box; }
-        .btn-start, #btnAbort { font-weight: bold; cursor: pointer; }
-        .btn-start { background: var(--primary-dark); color: white; }
-        #btnAbort { background: var(--pulse-red); color: white; display: none; }
-        .log-item { background: white; padding: 10px; margin: 8px 0; border-left: 4px solid var(--primary-dark); font-size: 0.9rem; }
         h3 { font-size: 1.05rem; margin-top: 0; color: #495057; display: flex; align-items: center; gap: 6px; }
         .form-group { margin-bottom: 14px; display: flex; flex-direction: column; }
         .form-group label { font-weight: 600; margin-bottom: 6px; color: #6c757d; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
         input, select, button { padding: 12px; font-size: 1rem; border: 2px solid #e2e8f0; border-radius: 12px; box-sizing: border-box; width: 100%; transition: all 0.2s; }
         input:focus, select:focus { border-color: var(--primary-dark); outline: none; }
-        select, input[type="number"], input[type="text"] { background-color: white; font-weight: 500; }
-        
+        select, input[type="number"], input[list] { background-color: white; font-weight: 500; }
         .status { font-size: 1.8rem; font-weight: 800; margin: 15px 0; min-height: 55px; text-align: center; }
         .counter { font-size: 5rem; font-weight: 900; margin: 5px 0; color: var(--primary-dark); text-align: center; letter-spacing: -2px; }
         .sub-status { font-size: 1.4rem; font-weight: 700; margin: 10px 0; min-height: 35px; text-align: center; }
@@ -59,7 +47,6 @@
         .btn-add { background-color: #e2e8f0; color: var(--primary-dark); border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; margin-top: 5px; border-radius: 10px; }
         .btn-export-excel { background-color: #16a34a; color: white; border: none; font-weight: 700; font-size: 1.1rem; padding: 14px; cursor: pointer; border-radius: 14px; box-shadow: 0 5px 15px rgba(22, 163, 74, 0.25); }
         .btn-export-txt { background-color: #4b5563; color: white; border: none; font-weight: 700; font-size: 1.1rem; padding: 14px; cursor: pointer; border-radius: 14px; box-shadow: 0 5px 15px rgba(75, 85, 99, 0.25); }
-        
         .confirm-box { display: none; flex-direction: column; gap: 12px; margin: 20px 0; }
         .btn-large { padding: 18px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 16px; cursor: pointer; text-align: center; box-shadow: 0 6px 12px rgba(0,0,0,0.05); }
         .btn-keep { background-color: #10b981; color: white; }
@@ -81,37 +68,13 @@
 <body>
 
 <div class="container">
-    <button id="installAppBtn" class="install-btn">📲 安裝到手機桌面</button>
-    <div class="app-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <text x="256" y="140" fill="#00FF88" font-family="Arial" font-weight="900" font-size="75" text-anchor="middle" letter-spacing="4">TEMPO</text>
-            <path d="M120 270 h272" stroke="#FFFFFF" stroke-width="36" stroke-linecap="round"/>
-            <path d="M150 174 v192 M90 209 v122" stroke="#FFFFFF" stroke-width="32" stroke-linecap="round"/>
-            <path d="M362 174 v192 M422 209 v122" stroke="#FFFFFF" stroke-width="32" stroke-linecap="round"/>
-            <path d="M160 410 L210 410 L240 350 L270 450 L300 410 L352 410" fill="none" stroke="#00FF88" stroke-width="24" stroke-linecap="round"/>
-        </svg>
-    <!-- PWA 安裝按鈕 -->
-    <button id="installAppBtn" class="install-btn">📲 點此將 App 安裝到手機桌面</button>
-
     <div class="app-header">
-        <!-- 直接內嵌 SVG 圖示，確保100%顯示 -->
-        <div class="app-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                <text x="256" y="140" fill="#00FF88" font-family="Arial, sans-serif" font-weight="900" font-size="75" text-anchor="middle" letter-spacing="4">TEMPO</text>
-                <path d="M120 270 h272" stroke="#FFFFFF" stroke-width="36" stroke-linecap="round"/>
-                <path d="M150 174 v192 M90 209 v122" stroke="#FFFFFF" stroke-width="32" stroke-linecap="round"/>
-                <path d="M362 174 v192 M422 209 v122" stroke="#FFFFFF" stroke-width="32" stroke-linecap="round"/>
-                <path d="M160 410 L210 410 L240 350 L270 450 L300 410 L352 410" fill="none" stroke="#00FF88" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </div>
-        <h1 class="app-title" style="margin-top:0;">TempoTrainer Pro</h1>
+        <img src="./icon.svg" alt="App Icon" class="app-icon-img">
+        <h1 class="app-title">TempoTrainer Pro</h1>
     </div>
     
     <div id="setup-area">
         <div class="section">
-            <h3>🎯 選擇動作</h3>
-            <select id="muscleFilter" onchange="filterTargetMuscles()"><option value="all">-- 全部部位 --</option></select>
-            <select id="actionSelect"></select>
             <h3>🎯 選擇訓練動作</h3>
             <div class="form-group">
                 <label>1. 篩選目標肌肉位置</label>
@@ -128,24 +91,25 @@
         <div class="section" style="background: #eef2f7;">
             <h3>➕ 加入自設特定位置動作</h3>
             <div class="form-group">
-                <label>對應肌肉位置：</label>
-                <select id="customMuscleSelect" onchange="toggleCustomMuscleInput()"></select>
-                <!-- 隱藏的輸入框，選擇"其他"時顯示 -->
-                <input type="text" id="customMuscleInput" placeholder="請輸入全新部位名稱 (例如: 背闊肌)" style="display: none; margin-top: 8px; border-color: #2563eb;">
+                <label>對應肌肉位置 (可選擇或自行輸入)：</label>
+                <input type="text" id="customMuscle" list="muscleOptions" placeholder="例如：背肌-背闊肌 或 腿部">
+                <datalist id="muscleOptions">
+                    <option value="胸肌-上胸"></option>
+                    <option value="胸肌-中下胸"></option>
+                    <option value="肩膊-前束"></option>
+                    <option value="肩膊-中束"></option>
+                    <option value="肩膊-後束"></option>
+                    <option value="二頭肌-長頭外側"></option>
+                </datalist>
             </div>
             <div class="form-group">
                 <label>輸入動作名稱：</label>
-                <input type="text" id="customActionName" placeholder="例如：滑輪下拉">
+                <input type="text" id="customActionName" placeholder="例如：自製橡筋帶外展飛鳥">
                 <button class="btn-add" onclick="addNewCustomAction()">儲存特定動作至選單</button>
             </div>
         </div>
 
         <div class="section">
-            <h3>➕ 自訂動作</h3>
-            <select id="customMuscleSelect" onchange="toggleCustomMuscleInput()"></select>
-            <input type="text" id="customMuscleInput" placeholder="請輸入全新部位名稱" style="display:none;">
-            <input type="text" id="customActionName" placeholder="輸入動作名稱">
-            <button onclick="addNewCustomAction()">儲存特定動作</button>
             <h3>⚙️ 模式、組數與目標</h3>
             <div class="form-group">
                 <label>訓練目的種類</label>
@@ -171,11 +135,6 @@
             </div>
         </div>
     </div>
-    <div id="playback-area" style="text-align:center;">
-        <div id="statusText" style="font-size:1.5rem; font-weight:800;">準備就緒</div>
-        <div id="mainDisplay" style="font-size: 5rem; font-weight: 900; margin:10px 0;">0</div>
-        <div id="subStatusText">---</div>
-        <button id="btnAbort" onclick="abortWorkout()">🛑 中止訓練並返回</button>
 
     <div id="playback-area">
         <div class="status" id="statusText">準備就緒</div>
@@ -187,9 +146,6 @@
         <button id="btnKeep" class="btn-large btn-keep" onclick="chooseKeepReps()">保持 12 下</button>
         <button class="btn-large btn-change" onclick="showModifierPanel()">修改次數 ✏️</button>
     </div>
-    <div class="section" id="exportGroup" style="display:none;">
-        <button onclick="exportTodayExcel()">📊 匯出 Excel</button>
-        <button onclick="exportTodayLog()" style="margin-top:10px;">📄 匯出 TXT 報告</button>
 
     <div id="modifierPanel" class="modifier-panel">
         <button class="btn-calc" onclick="adjustCalcReps(-1)">−</button>
@@ -208,73 +164,44 @@
             <button class="btn-export-txt" onclick="exportTodayLog()">📄 匯出文字報告 (.txt)</button>
         </div>
     </div>
-    <div id="logContainer"></div>
 </div>
 
 <script>
-    // PWA 安裝邏輯
-    /* === PWA 安裝按鈕與提示邏輯 === */
-    let deferredPrompt;
-    const installBtn = document.getElementById('installAppBtn');
-    window.addEventListener('beforeinstallprompt', (e) => { deferredPrompt = e; installBtn.style.display = 'block'; });
-    installBtn.onclick = () => {
-        if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; }
-        else { alert('如無法安裝，請點選瀏覽器選單「加到主畫面」。'); }
-    };
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
-    
-    // 判斷是否為獨立 App 模式 (已安裝)
-    const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
-    const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-
-    // Android/Chrome 攔截安裝事件
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        if (!isStandalone) installBtn.style.display = 'block';
-    });
-
-    // 如果是 iOS 且尚未安裝，主動顯示按鈕
-    if (isIos && !isStandalone) {
-        installBtn.style.display = 'block';
-    }
-
-    installBtn.addEventListener('click', async () => {
-        if (deferredPrompt) {
-            // Android 觸發安裝
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') installBtn.style.display = 'none';
-            deferredPrompt = null;
-        } else if (isIos) {
-            // iOS 彈出教學
-            alert('【iOS 用戶安裝提示】\n請點擊瀏覽器正下方的「分享」按鈕 📤\n(方塊往上的箭頭)\n\n然後往下滑選擇「加入主畫面」即可將此 App 安裝到桌面！');
-        }
-    });
-
-    /* === Service Worker 註冊 === */
+    /* =========================================
+       1. 註冊 Service Worker
+       ========================================= */
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('SW Registered'))
                 .catch(err => console.log('SW Error: ', err));
         });
     }
 
-    /* === Screen Wake Lock (螢幕常亮) === */
+    /* =========================================
+       2. Screen Wake Lock API (螢幕常亮)
+       ========================================= */
     let wakeLock = null;
     async function requestWakeLock() {
         if ('wakeLock' in navigator) {
-            try { wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
+            try { wakeLock = await navigator.wakeLock.request('screen'); } 
+            catch (err) { console.error(`Wake Lock error: ${err.message}`); }
         }
     }
     function releaseWakeLock() {
-        if (wakeLock !== null) { wakeLock.release().then(() => wakeLock = null); }
+        if (wakeLock !== null) {
+            wakeLock.release().then(() => wakeLock = null);
+        }
     }
     document.addEventListener('visibilitychange', async () => {
-        if (wakeLock !== null && document.visibilityState === 'visible') { await requestWakeLock(); }
+        if (wakeLock !== null && document.visibilityState === 'visible') {
+            await requestWakeLock();
+        }
     });
 
-    /* === 核心資料庫與邏輯 === */
+    /* =========================================
+       3. 訓練邏輯與資料庫
+       ========================================= */
     const defaultActions = [
         { muscle: "胸肌-上胸", name: "【啞鈴】上斜啞鈴推舉 (Incline DB Press)" },
         { muscle: "胸肌-中下胸", name: "【啞鈴】平躺啞鈴推舉 (Flat DB Press)" },
@@ -292,9 +219,6 @@
     let appState = 'PREPARE';
     let tempCalcReps = 12;
 
-    // 訓練邏輯
-    let actionDatabase = [], intervalId = null, currentSet = 1, currentRep = 1, beatCount = 0, prepareSeconds = 5, appState = 'PREPARE';
-    const defaultActions = [{ muscle: "胸肌-上胸", name: "【啞鈴】上斜啞鈴推舉" }, { muscle: "二頭肌", name: "【啞鈴】彎舉" }];
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     
     function playEnhancedSound(type, freq, duration) {
@@ -309,7 +233,6 @@
         osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
 
-
     window.onload = function() {
         const cached = localStorage.getItem('custom_actions_v2');
         actionDatabase = cached ? [...defaultActions, ...JSON.parse(cached)] : [...defaultActions];
@@ -317,71 +240,22 @@
         filterTargetMuscles(); 
     };
 
-    /* === 更新部位選單邏輯 (包含"其他"選項) === */
     function updateMuscleFilterOptions() {
-        const filterEl = document.getElementById('muscleFilter'), customSelect = document.getElementById('customMuscleSelect');
-        const muscles = [...new Set(actionDatabase.map(a => a.muscle))];
-        filterEl.innerHTML = '<option value="all">-- 全部部位 --</option>';
         const filterEl = document.getElementById('muscleFilter');
-        const customSelect = document.getElementById('customMuscleSelect');
-        
-        const currentFilter = filterEl.value; 
-        const currentCustom = customSelect.value;
-        
+        const currentValue = filterEl.value; 
         const uniqueMuscles = [...new Set(actionDatabase.map(act => act.muscle))];
         
-        // 1. 更新主篩選器
         filterEl.innerHTML = '<option value="all">-- 全部肌肉部位 --</option>';
         uniqueMuscles.forEach(muscle => {
             const opt = document.createElement('option');
-            opt.value = muscle; opt.innerText = muscle; 
+            opt.value = muscle;
+            opt.innerText = muscle; 
             filterEl.appendChild(opt);
         });
-
-        // 2. 更新自訂動作下拉選單
-        customSelect.innerHTML = '';
-        muscles.forEach(m => { filterEl.add(new Option(m, m)); customSelect.add(new Option(m, m)); });
-        customSelect.add(new Option('➕ 其他', 'other'));
-        uniqueMuscles.forEach(muscle => {
-            const opt = document.createElement('option');
-            opt.value = muscle; opt.innerText = muscle; 
-            customSelect.appendChild(opt);
-        });
-        
-        // 加入"其他"選項
-        const otherOpt = document.createElement('option');
-        otherOpt.value = 'other'; 
-        otherOpt.innerText = '➕ 其他 (自行輸入新部位)';
-        otherOpt.style.fontWeight = 'bold';
-        otherOpt.style.color = '#2563eb';
-        customSelect.appendChild(otherOpt);
-
-        if (uniqueMuscles.includes(currentFilter)) filterEl.value = currentFilter;
-        if (uniqueMuscles.includes(currentCustom) || currentCustom === 'other') {
-            customSelect.value = currentCustom;
-        } else {
-            customSelect.value = uniqueMuscles[0];
-        }
-        toggleCustomMuscleInput();
-    }
-
-    function toggleCustomMuscleInput() { document.getElementById('customMuscleInput').style.display = (document.getElementById('customMuscleSelect').value === 'other') ? 'block' : 'none'; }
-    /* === 切換「其他」輸入框顯示/隱藏 === */
-    function toggleCustomMuscleInput() {
-        const select = document.getElementById('customMuscleSelect');
-        const input = document.getElementById('customMuscleInput');
-        if (select.value === 'other') {
-            input.style.display = 'block';
-            input.focus();
-        } else {
-            input.style.display = 'none';
-        }
+        if (uniqueMuscles.includes(currentValue)) filterEl.value = currentValue;
     }
 
     function filterTargetMuscles() {
-        const val = document.getElementById('muscleFilter').value, sel = document.getElementById('actionSelect');
-        sel.innerHTML = '';
-        actionDatabase.filter(a => val === 'all' || a.muscle === val).forEach(a => sel.add(new Option(a.name, a.name)));
         const filterValue = document.getElementById('muscleFilter').value;
         const selectEl = document.getElementById('actionSelect');
         selectEl.innerHTML = '';
@@ -396,36 +270,12 @@
         });
     }
 
-    /* === 儲存自訂動作邏輯更新 === */
     function addNewCustomAction() {
-        const name = document.getElementById('customActionName').value, mSel = document.getElementById('customMuscleSelect').value, mIn = document.getElementById('customMuscleInput').value;
-        const muscle = (mSel === 'other') ? mIn : mSel;
-        if (!name || !muscle) return alert('請完整填寫！');
-        const newAct = { muscle, name: '【自設】' + name };
-        actionDatabase.push(newAct);
-        localStorage.setItem('custom_actions_v2', JSON.stringify(actionDatabase.filter(a => a.name.includes('【自設】'))));
-        updateMuscleFilterOptions(); filterTargetMuscles(); alert('已儲存！');
-    }
-
-    function abortWorkout() {
-        if (confirm('確定中止訓練嗎？系統將保存已完成組數。')) {
-            if (intervalId) clearInterval(intervalId);
-            document.getElementById('playback-area').style.display = 'block';
-            document.getElementById('setup-area').style.display = 'block';
-            document.getElementById('btnAbort').style.display = 'none';
-            document.getElementById('statusText').innerText = '訓練已中止';
         const nameInput = document.getElementById('customActionName');
-        const selectEl = document.getElementById('customMuscleSelect');
-        const textInputEl = document.getElementById('customMuscleInput');
+        const muscleInput = document.getElementById('customMuscle'); 
         
         const actionName = nameInput.value.trim();
-        let muscleType = selectEl.value;
-        
-        // 如果使用者選擇了「其他」，則取隱藏輸入框的值
-        if (muscleType === 'other') {
-            muscleType = textInputEl.value.trim();
-            if (!muscleType) { alert('請輸入全新的肌肉部位名稱！'); return; }
-        }
+        const muscleType = muscleInput.value.trim() || '未分類部位';
         
         if (!actionName) { alert('請先輸入動作名稱！'); return; }
         
@@ -437,22 +287,15 @@
         customList.push(newAction);
         localStorage.setItem('custom_actions_v2', JSON.stringify(customList));
         
-        nameInput.value = ''; 
-        textInputEl.value = '';
+        nameInput.value = ''; muscleInput.value = '';
         
         updateMuscleFilterOptions();
-        
-        // 自動切換到剛才新增的部位與動作
         document.getElementById('muscleFilter').value = muscleType; 
-        document.getElementById('customMuscleSelect').value = muscleType;
-        toggleCustomMuscleInput();
         filterTargetMuscles(); 
-        
         document.getElementById('actionSelect').value = newAction.name;
         alert(`成功將「${muscleType}」的動作「${actionName}」加入選單！`);
     }
 
-    /* === 節奏與計時核心邏輯 === */
     function generateRepTimeline(mode) {
         let timeline = [];
         const cfg = {
@@ -609,7 +452,6 @@
     }
 
     function exportTodayLog() {
-        const blob = new Blob(['\uFEFF', '重量訓練報告\n\n' + todayWorkoutSession.map(i => i['訓練動作']).join('\n')], { type: "text/plain;charset=utf-8" });
         if(todayWorkoutSession.length === 0) return;
         const now = new Date();
         let fileContent = `=====================================\n🏋️‍♂️ 重量訓練全自動成果報告\n=====================================\n\n`;
@@ -617,12 +459,9 @@
         const blob = new Blob([fileContent], { type: "text/plain;charset=utf-8" });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = 'Report.txt';
         link.download = `Gym_Report_${now.getFullYear()}_${now.getMonth()+1}_${now.getDate()}.txt`;
         link.click();
     }
-
-    async function startTraining() { /* 邏輯同前 */ }
 </script>
 </body>
 </html>
