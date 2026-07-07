@@ -65,36 +65,39 @@
 </div>
 
 <script>
-  /* === PWA 安裝按鈕與提示邏輯 === */
+  /* === PWA 安裝按鈕與提示邏輯 (萬無一失版) === */
     let deferredPrompt;
     const installBtn = document.getElementById('installAppBtn');
     
-    // 判斷是否為獨立 App 模式 (已安裝)
+    // 判斷是否已經是安裝後的獨立 App (如果已安裝，就隱藏按鈕)
     const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
     const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
-    // Android/Chrome 攔截安裝事件
+    if (isStandalone) {
+        installBtn.style.display = 'none';
+    } else {
+        installBtn.style.display = 'block'; // 確保網頁版一定看得到按鈕
+    }
+
+    // 攔截 Android 的自動安裝事件
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
-        deferredPrompt = e;
-        if (!isStandalone) installBtn.style.display = 'block';
+        deferredPrompt = e; // 把事件存起來，等使用者按按鈕時觸發
     });
-
-    // 如果是 iOS 且尚未安裝，主動顯示按鈕
-    if (isIos && !isStandalone) {
-        installBtn.style.display = 'block';
-    }
 
     installBtn.addEventListener('click', async () => {
         if (deferredPrompt) {
-            // Android 觸發安裝
+            // Android 完美支援一鍵安裝的情況
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
             if (outcome === 'accepted') installBtn.style.display = 'none';
             deferredPrompt = null;
         } else if (isIos) {
-            // iOS 彈出教學
-            alert('【iOS 用戶安裝提示】\n請點擊瀏覽器正下方的「分享」按鈕 📤\n(方塊往上的箭頭)\n\n然後往下滑選擇「加入主畫面」即可將此 App 安裝到桌面！');
+            // iOS 蘋果用戶專屬手動教學
+            alert('【🍏 iOS 蘋果用戶安裝教學】\n\n1️⃣ 點擊瀏覽器正下方的「分享 📤」按鈕 (方塊往上的箭頭)\n2️⃣ 往下滑，點選「加入主畫面 ➕」\n3️⃣ 點擊右上角的「新增」即可！');
+        } else {
+            // Android 用戶但未觸發自動安裝時的備用教學
+            alert('【🤖 Android 用戶安裝教學】\n\n請點擊瀏覽器右上角的「選單 (⋮ 或 ⋯)」\n然後選擇「加到主畫面」或「安裝應用程式」即可！');
         }
     });
 
@@ -425,12 +428,21 @@
         XLSX.writeFile(workbook, filename);
     }
 
-    function exportTodayLog() {
+  function exportTodayLog() {
         if(todayWorkoutSession.length === 0) return;
         const now = new Date();
-        let fileContent = `=====================================\n🏋️‍♂️ 重量訓練全自動成果報告\n=====================================\n\n`;
-        todayWorkoutSession.forEach((item, idx) => { fileContent += `[記錄 ${idx + 1}] ${item['訓練時間']} | ${item['訓練動作']} | ${item['組數進度']} | ${item['實際完成下數']} Reps\n`; });
-        const blob = new Blob([fileContent], { type: "text/plain;charset=utf-8" });
+        const dateStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
+        
+        // 1. 建立內容
+        let fileContent = `=====================================\n🏋️‍♂️ 重量訓練全自動成果報告 (${dateStr})\n=====================================\n\n`;
+        todayWorkoutSession.forEach((item, index) => {
+            fileContent += `[記錄編號 ${index + 1}]\n• 訓練時間: ${item['訓練時間']}\n• 訓練動作: ${item['訓練動作']}\n• 完成進度: ${item['組數進度']}\n• 節奏模式: ${item['節奏模式']}\n• 實際完成下數: ${item['實際完成下數']} Reps\n-------------------------------------\n`;
+        });
+
+        // 2. 關鍵修正：加入 BOM (Byte Order Mark) 讓 Excel/記事本能識別 UTF-8
+        const blob = new Blob(['\uFEFF', fileContent], { type: "text/plain;charset=utf-8" });
+        
+        // 3. 下載觸發
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
         link.download = `Gym_Report_${now.getFullYear()}_${now.getMonth()+1}_${now.getDate()}.txt`;
