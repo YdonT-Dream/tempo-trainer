@@ -85,6 +85,15 @@
     </div>
     
     <div id="setup-area">
+            <div class="section">
+            <h3>🎯 選擇訓練動作</h3>
+            <select id="muscleFilter" onchange="filterTargetMuscles()"><option value="all">-- 全部部位 --</option></select>
+            <select id="actionSelect"></select>
+        </div>
+
+
+
+        
         <div class="section">
             <h3>🎯 選擇訓練動作</h3>
             <div class="form-group">
@@ -282,123 +291,47 @@
         osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
 
-    window.onload = function() {
-        const cached = localStorage.getItem('custom_actions_v2');
-        actionDatabase = cached ? [...defaultActions, ...JSON.parse(cached)] : [...defaultActions];
-        updateMuscleFilterOptions();
-        filterTargetMuscles(); 
+    合併
+    let actionDatabase = [], intervalId = null, targetSets, targetReps, restDuration, currentSet = 1, currentRep = 1, beatCount = 0, prepareSeconds = 5, appState = 'PREPARE', todayWorkoutSession = [];
+    const installBtn = document.getElementById('installAppBtn');
+    
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); window.deferredPrompt = e; installBtn.style.display = 'block'; });
+    installBtn.onclick = () => { if (window.deferredPrompt) { window.deferredPrompt.prompt(); window.deferredPrompt = null; } else { alert('請點選瀏覽器選單「加到主畫面」。'); } };
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+
+    window.onload = () => {
+        actionDatabase = localStorage.getItem('custom_actions_v2') ? [...[{muscle:"胸肌-上胸", name:"【啞鈴】上斜推舉"}], ...JSON.parse(localStorage.getItem('custom_actions_v2'))] : [{muscle:"胸肌-上胸", name:"【啞鈴】上斜推舉"}];
+        updateMuscleFilterOptions(); filterTargetMuscles();
     };
 
-    /* === 更新部位選單邏輯 (包含"其他"選項) === */
     function updateMuscleFilterOptions() {
-        const filterEl = document.getElementById('muscleFilter');
-        const customSelect = document.getElementById('customMuscleSelect');
-        
-        const currentFilter = filterEl.value; 
-        const currentCustom = customSelect.value;
-        
-        const uniqueMuscles = [...new Set(actionDatabase.map(act => act.muscle))];
-        
-        // 1. 更新主篩選器
-        filterEl.innerHTML = '<option value="all">-- 全部肌肉部位 --</option>';
-        uniqueMuscles.forEach(muscle => {
-            const opt = document.createElement('option');
-            opt.value = muscle; opt.innerText = muscle; 
-            filterEl.appendChild(opt);
-        });
-
-        // 2. 更新自訂動作下拉選單
+        const filterEl = document.getElementById('muscleFilter'), customSelect = document.getElementById('customMuscleSelect');
+        const muscles = [...new Set(actionDatabase.map(a => a.muscle))];
+        filterEl.innerHTML = '<option value="all">-- 全部部位 --</option>';
         customSelect.innerHTML = '';
-        uniqueMuscles.forEach(muscle => {
-            const opt = document.createElement('option');
-            opt.value = muscle; opt.innerText = muscle; 
-            customSelect.appendChild(opt);
-        });
-        
-        // 加入"其他"選項
-        const otherOpt = document.createElement('option');
-        otherOpt.value = 'other'; 
-        otherOpt.innerText = '➕ 其他 (自行輸入新部位)';
-        otherOpt.style.fontWeight = 'bold';
-        otherOpt.style.color = '#2563eb';
-        customSelect.appendChild(otherOpt);
-
-        if (uniqueMuscles.includes(currentFilter)) filterEl.value = currentFilter;
-        if (uniqueMuscles.includes(currentCustom) || currentCustom === 'other') {
-            customSelect.value = currentCustom;
-        } else {
-            customSelect.value = uniqueMuscles[0];
-        }
-        toggleCustomMuscleInput();
+        muscles.forEach(m => { filterEl.add(new Option(m, m)); customSelect.add(new Option(m, m)); });
+        customSelect.add(new Option('➕ 其他', 'other'));
     }
 
-    /* === 切換「其他」輸入框顯示/隱藏 === */
-    function toggleCustomMuscleInput() {
-        const select = document.getElementById('customMuscleSelect');
-        const input = document.getElementById('customMuscleInput');
-        if (select.value === 'other') {
-            input.style.display = 'block';
-            input.focus();
-        } else {
-            input.style.display = 'none';
-        }
-    }
-
-    function filterTargetMuscles() {
-        const filterValue = document.getElementById('muscleFilter').value;
-        const selectEl = document.getElementById('actionSelect');
-        selectEl.innerHTML = '';
-        const filtered = actionDatabase.filter(act => filterValue === 'all' || act.muscle === filterValue);
-        
-        filtered.forEach(act => {
-            const opt = document.createElement('option');
-            opt.value = act.name;
-            const displayMuscle = act.muscle.includes('-') ? act.muscle.split('-')[1] : act.muscle;
-            opt.innerText = `[${displayMuscle}] ${act.name}`;
-            selectEl.appendChild(opt);
-        });
-    }
-
-    /* === 儲存自訂動作邏輯更新 === */
+    function toggleCustomMuscleInput() { document.getElementById('customMuscleInput').style.display = (document.getElementById('customMuscleSelect').value === 'other') ? 'block' : 'none'; }
+    function filterTargetMuscles() { const val = document.getElementById('muscleFilter').value, sel = document.getElementById('actionSelect'); sel.innerHTML = ''; actionDatabase.filter(a => val === 'all' || a.muscle === val).forEach(a => sel.add(new Option(a.name, a.name))); }
+    
     function addNewCustomAction() {
-        const nameInput = document.getElementById('customActionName');
-        const selectEl = document.getElementById('customMuscleSelect');
-        const textInputEl = document.getElementById('customMuscleInput');
-        
-        const actionName = nameInput.value.trim();
-        let muscleType = selectEl.value;
-        
-        // 如果使用者選擇了「其他」，則取隱藏輸入框的值
-        if (muscleType === 'other') {
-            muscleType = textInputEl.value.trim();
-            if (!muscleType) { alert('請輸入全新的肌肉部位名稱！'); return; }
-        }
-        
-        if (!actionName) { alert('請先輸入動作名稱！'); return; }
-        
-        const newAction = { muscle: muscleType, name: `【自設】${actionName}` };
-        actionDatabase.push(newAction);
-        
-        const cached = localStorage.getItem('custom_actions_v2');
-        let customList = cached ? JSON.parse(cached) : [];
-        customList.push(newAction);
-        localStorage.setItem('custom_actions_v2', JSON.stringify(customList));
-        
-        nameInput.value = ''; 
-        textInputEl.value = '';
-        
-        updateMuscleFilterOptions();
-        
-        // 自動切換到剛才新增的部位與動作
-        document.getElementById('muscleFilter').value = muscleType; 
-        document.getElementById('customMuscleSelect').value = muscleType;
-        toggleCustomMuscleInput();
-        filterTargetMuscles(); 
-        
-        document.getElementById('actionSelect').value = newAction.name;
-        alert(`成功將「${muscleType}」的動作「${actionName}」加入選單！`);
+        const name = document.getElementById('customActionName').value, mSel = document.getElementById('customMuscleSelect').value, mIn = document.getElementById('customMuscleInput').value;
+        const muscle = (mSel === 'other') ? mIn : mSel;
+        if (!name || !muscle) return alert('請完整填寫！');
+        const newAct = { muscle, name: '【自設】' + name };
+        actionDatabase.push(newAct);
+        localStorage.setItem('custom_actions_v2', JSON.stringify(actionDatabase.filter(a => a.name.includes('【自設】'))));
+        updateMuscleFilterOptions(); filterTargetMuscles(); alert('已儲存！');
     }
 
+    function startTraining() {
+        document.getElementById('setup-area').style.display = 'none';
+        document.getElementById('playback-area').style.display = 'block';
+        document.getElementById('btnAbort').style.display = 'block';
+        // 啟動計時邏輯
+    }
     /* === 節奏與計時核心邏輯 === */
     function generateRepTimeline(mode) {
         let timeline = [];
