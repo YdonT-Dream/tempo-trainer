@@ -84,15 +84,6 @@
         <h1 class="app-title">TempoTrainer Pro</h1>
     </div>
     
-    <div id="setup-area">
-            <div class="section">
-            <h3>🎯 選擇訓練動作</h3>
-            <select id="muscleFilter" onchange="filterTargetMuscles()"><option value="all">-- 全部部位 --</option></select>
-            <select id="actionSelect"></select>
-        </div>
-
-
-
         
         <div class="section">
             <h3>🎯 選擇訓練動作</h3>
@@ -291,7 +282,7 @@
         osc.start(); osc.stop(audioCtx.currentTime + duration);
     }
 
-    合併
+    
     let actionDatabase = [], intervalId = null, targetSets, targetReps, restDuration, currentSet = 1, currentRep = 1, beatCount = 0, prepareSeconds = 5, appState = 'PREPARE', todayWorkoutSession = [];
     const installBtn = document.getElementById('installAppBtn');
     
