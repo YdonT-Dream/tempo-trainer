@@ -560,6 +560,34 @@
         link.download = `Gym_Report_${now.getFullYear()}_${now.getMonth()+1}_${now.getDate()}.txt`;
         link.click();
     }
+    function abortWorkout() {
+    if (confirm('確定要放棄目前的訓練進度並返回設定嗎？')) {
+        // 清除定時器
+        if(intervalId) { clearInterval(intervalId); intervalId = null; }
+        
+        // 解除常亮
+        releaseWakeLock();
+        
+        // 重置介面顯示
+        document.getElementById('playback-area').style.display = 'block';
+        document.getElementById('setup-area').style.display = 'block';
+        document.getElementById('actionBtn').style.display = 'block';
+        document.getElementById('actionBtn').innerText = '開始訓練';
+        document.getElementById('btnAbort').style.display = 'none';
+        
+        // 隱藏其他不必要的 UI
+        document.getElementById('confirmBox').style.display = 'none';
+        document.getElementById('modifierPanel').style.display = 'none';
+        document.getElementById('btnConfirmChange').style.display = 'none';
+        document.getElementById('exportGroup').style.display = 'none';
+        
+        // 回到準備狀態
+        document.body.className = '';
+        document.getElementById('statusText').innerText = '已中止訓練';
+        document.getElementById('mainDisplay').innerText = '0';
+        document.getElementById('subStatusText').innerText = '---';
+    }
+}
 </script>
 </body>
 </html>
