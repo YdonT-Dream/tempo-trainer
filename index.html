@@ -237,11 +237,11 @@
 
     /* === 核心資料庫與邏輯 === */
     const defaultActions = [
-        { muscle: "胸肌-上胸", name: "【啞鈴】上斜啞鈴推舉 (Incline DB Press)" },
-        { muscle: "胸肌-中下胸", name: "【啞鈴】平躺啞鈴推舉 (Flat DB Press)" },
-        { muscle: "肩膊-前束", name: "【啞鈴】坐姿啞鈴推舉 (Dumbbell Shoulder Press)" },
-        { muscle: "肩膊-中束", name: "【啞鈴】站姿啞鈴側平舉 (DB Lateral Raise)" },
-        { muscle: "二頭肌-長頭外側", name: "【啞鈴】斜椅啞鈴彎舉 (Incline DB Curl)" }
+        { muscle: "胸肌", name: "【啞鈴】上斜啞鈴推舉 (Incline DB Press)" },
+        { muscle: "胸肌", name: "【啞鈴】平躺啞鈴推舉 (Flat DB Press)" },
+        { muscle: "肩膊", name: "【啞鈴】坐姿啞鈴推舉 (Dumbbell Shoulder Press)" },
+        { muscle: "肩膊", name: "【啞鈴】站姿啞鈴側平舉 (DB Lateral Raise)" },
+        { muscle: "二頭肌", name: "【啞鈴】斜椅啞鈴彎舉 (Incline DB Curl)" }
     ];
 
     let actionDatabase = [];
@@ -524,7 +524,7 @@
         document.body.className = '';
         document.getElementById('statusText').innerText = '🎉 該動作所有組數完成！';
         document.getElementById('mainDisplay').innerText = 'DONE';
-        document.getElementById('subStatusText').innerText = `總共完成了 ${targetSets} 組！核心充血完畢。`;
+        document.getElementById('subStatusText').innerText = `總共完成了 ${targetSets} 組！`;
         document.getElementById('setup-area').style.display = 'block';
         document.getElementById('actionBtn').style.display = 'block';
         document.getElementById('actionBtn').innerText = '開始下一個動作';
