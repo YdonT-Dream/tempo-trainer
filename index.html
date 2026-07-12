@@ -403,7 +403,7 @@
     async function startTraining() {
         if(!document.getElementById('actionSelect').value) { alert('請先選擇動作！'); return; }
         if(intervalId) { clearInterval(intervalId); intervalId = null; }
-        
+       
         await requestWakeLock();
 
         targetSets = parseInt(document.getElementById('targetSets').value);
@@ -417,7 +417,7 @@
         
         document.getElementById('setup-area').style.display = 'none';
         document.getElementById('actionBtn').style.display = 'none';
-        
+        document.getElementById('btnAbort').style.display = 'block';
         intervalId = setInterval(runTick, 1000);
         runTick();
     }
