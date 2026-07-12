@@ -538,12 +538,21 @@
         XLSX.writeFile(workbook, filename);
     }
 
-    function exportTodayLog() {
+   function exportTodayLog() {
         if(todayWorkoutSession.length === 0) return;
         const now = new Date();
-        let fileContent = `=====================================\n🏋️‍♂️ 重量訓練全自動成果報告\n=====================================\n\n`;
-        todayWorkoutSession.forEach((item, idx) => { fileContent += `[記錄 ${idx + 1}] ${item['訓練時間']} | ${item['訓練動作']} | ${item['組數進度']} | ${item['實際完成下數']} Reps\n`; });
-        const blob = new Blob([fileContent], { type: "text/plain;charset=utf-8" });
+        const dateStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
+        
+        // 1. 建立內容
+        let fileContent = `=====================================\n🏋️‍♂️ 重量訓練全自動成果報告 (${dateStr})\n=====================================\n\n`;
+        todayWorkoutSession.forEach((item, index) => {
+            fileContent += `[記錄編號 ${index + 1}]\n• 訓練時間: ${item['訓練時間']}\n• 訓練動作: ${item['訓練動作']}\n• 完成進度: ${item['組數進度']}\n• 節奏模式: ${item['節奏模式']}\n• 實際完成下數: ${item['實際完成下數']} Reps\n-------------------------------------\n`;
+        });
+
+        // 2. 關鍵修正：加入 BOM (Byte Order Mark) 讓 Excel/記事本能識別 UTF-8
+        const blob = new Blob(['\uFEFF', fileContent], { type: "text/plain;charset=utf-8" });
+        
+        // 3. 下載觸發
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
         link.download = `Gym_Report_${now.getFullYear()}_${now.getMonth()+1}_${now.getDate()}.txt`;
