@@ -5,23 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>重量訓練節奏控制器 Pro</title>
     
-    <!-- 引入 PWA Manifest -->
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#1a1a1a">
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="TempoTrainer">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="display" content="standalone">
 
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSJub25lIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMCIgZmlsbD0iIzFBMUExQSIvPjxwYXRoIGQ9Ik0xMTAgMjU2aDI5MiIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjM2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMTQwIDE2MHYxOTJNODAgMTk1djEyMiIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjMyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMzcyIDE2MHYxOTJNNDMyIDE5NXYxMjIiIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjMyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMjg1IDEwMCBMMTk1IDI0NSBoMTAwIEwyMjUgNDEyIiBmaWxsPSJub25lIiBzdHJva2U9IiMwMEZGODgiIHN0cm9rZS13aWR0aD0iMjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==">
-    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSJub25lIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMCIgZmlsbD0iIzFBMUExQSIvPjxwYXRoIGQ9Ik0xMTAgMjU2aDI5MiIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjM2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMTQwIDE2MHYxOTJNODAgMTk1djEyMiIgc3Ryb2tlPSIjRkZGRkZGI">
-
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <style>
-        /* 樣式保持不變 */
         :root { 
             --bg-color: #f4f6f9; 
             --primary-dark: #1a1a1a;
@@ -32,14 +26,21 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); margin: 0; padding: 15px; transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1); display: flex; justify-content: center; }
         .container { width: 100%; max-width: 480px; background: white; padding: 25px; border-radius: 24px; box-shadow: var(--card-shadow); box-sizing: border-box; }
         .app-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 25px; }
-        .app-icon { width: 70px; height: 70px; background: var(--primary-dark); border-radius: 18px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 15px rgba(0,0,0,0.2); margin-bottom: 12px; }
+        
+        /* 將 SVG 內嵌的圖示樣式 */
+        .app-icon { width: 80px; height: 80px; margin-bottom: 12px; border-radius: 20px; box-shadow: 0 6px 15px rgba(0,0,0,0.2); background: #1a1a1a; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .app-icon svg { width: 100%; height: 100%; }
+
+        .install-btn { background-color: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; margin-bottom: 20px; cursor: pointer; display: none; width: 100%; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3); }
+
         .section { background: #f8f9fa; padding: 18px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #eef0f2; }
         h3 { font-size: 1.05rem; margin-top: 0; color: #495057; display: flex; align-items: center; gap: 6px; }
         .form-group { margin-bottom: 14px; display: flex; flex-direction: column; }
         .form-group label { font-weight: 600; margin-bottom: 6px; color: #6c757d; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
         input, select, button { padding: 12px; font-size: 1rem; border: 2px solid #e2e8f0; border-radius: 12px; box-sizing: border-box; width: 100%; transition: all 0.2s; }
         input:focus, select:focus { border-color: var(--primary-dark); outline: none; }
-        select, input[type="number"] { background-color: white; font-weight: 500; }
+        select, input[type="number"], input[type="text"] { background-color: white; font-weight: 500; }
+        
         .status { font-size: 1.8rem; font-weight: 800; margin: 15px 0; min-height: 55px; text-align: center; }
         .counter { font-size: 5rem; font-weight: 900; margin: 5px 0; color: var(--primary-dark); text-align: center; letter-spacing: -2px; }
         .sub-status { font-size: 1.4rem; font-weight: 700; margin: 10px 0; min-height: 35px; text-align: center; }
@@ -47,6 +48,7 @@
         .btn-add { background-color: #e2e8f0; color: var(--primary-dark); border: none; font-weight: 600; font-size: 0.9rem; cursor: pointer; margin-top: 5px; border-radius: 10px; }
         .btn-export-excel { background-color: #16a34a; color: white; border: none; font-weight: 700; font-size: 1.1rem; padding: 14px; cursor: pointer; border-radius: 14px; box-shadow: 0 5px 15px rgba(22, 163, 74, 0.25); }
         .btn-export-txt { background-color: #4b5563; color: white; border: none; font-weight: 700; font-size: 1.1rem; padding: 14px; cursor: pointer; border-radius: 14px; box-shadow: 0 5px 15px rgba(75, 85, 99, 0.25); }
+        
         .confirm-box { display: none; flex-direction: column; gap: 12px; margin: 20px 0; }
         .btn-large { padding: 18px; font-size: 1.2rem; font-weight: 800; border: none; border-radius: 16px; cursor: pointer; text-align: center; box-shadow: 0 6px 12px rgba(0,0,0,0.05); }
         .btn-keep { background-color: #10b981; color: white; }
@@ -66,18 +68,23 @@
     </style>
 </head>
 <body>
-<!-- HTML 結構保持不變 -->
+
 <div class="container">
+    <!-- PWA 安裝按鈕 -->
+    <button id="installAppBtn" class="install-btn">📲 點此將 App 安裝到手機桌面</button>
+
     <div class="app-header">
+        <!-- 直接內嵌 SVG 圖示，確保100%顯示 -->
         <div class="app-icon">
-            <svg width="42" height="42" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20 50h60" stroke="white" stroke-width="8" stroke-linecap="round"/>
-                <path d="M25 32v36M15 38v24" stroke="white" stroke-width="7" stroke-linecap="round"/>
-                <path d="M75 32v36M85 38v24" stroke="white" stroke-width="7" stroke-linecap="round"/>
-                <path d="M54 22L40 48h18L44 78" fill="none" stroke="#00ff88" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <text x="256" y="140" fill="#00FF88" font-family="Arial, sans-serif" font-weight="900" font-size="75" text-anchor="middle" letter-spacing="4">TEMPO</text>
+                <path d="M120 270 h272" stroke="#FFFFFF" stroke-width="36" stroke-linecap="round"/>
+                <path d="M150 174 v192 M90 209 v122" stroke="#FFFFFF" stroke-width="32" stroke-linecap="round"/>
+                <path d="M362 174 v192 M422 209 v122" stroke="#FFFFFF" stroke-width="32" stroke-linecap="round"/>
+                <path d="M160 410 L210 410 L240 350 L270 450 L300 410 L352 410" fill="none" stroke="#00FF88" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </div>
-        <h1 class="app-title">TempoTrainer Pro</h1>
+        <h1 class="app-title" style="margin-top:0;">TempoTrainer Pro</h1>
     </div>
     
     <div id="setup-area">
@@ -87,13 +94,6 @@
                 <label>1. 篩選目標肌肉位置</label>
                 <select id="muscleFilter" onchange="filterTargetMuscles()">
                     <option value="all">-- 全部肌肉部位 --</option>
-                    <option value="胸肌-上胸">胸肌 (上胸)</option>
-                    <option value="胸肌-中下胸">胸肌 (中/下胸)</option>
-                    <option value="肩膊-前束">肩膊 (前束)</option>
-                    <option value="肩膊-中束">肩膊 (中束)</option>
-                    <option value="肩膊-後束">肩膊 (後束)</option>
-                    <option value="二頭肌-長頭外側">二頭肌 (長頭/外側)</option>
-                    <option value="二頭肌-短頭內側">二頭肌 (短頭/內側)</option>
                 </select>
             </div>
             <div class="form-group">
@@ -106,19 +106,13 @@
             <h3>➕ 加入自設特定位置動作</h3>
             <div class="form-group">
                 <label>對應肌肉位置：</label>
-                <select id="customMuscle">
-                    <option value="胸肌-上胸">胸肌 (上胸)</option>
-                    <option value="胸肌-中下胸">胸肌 (中/下胸)</option>
-                    <option value="肩膊-前束">肩膊 (前束)</option>
-                    <option value="肩膊-中束">肩膊 (中束)</option>
-                    <option value="肩膊-後束">肩膊 (後束)</option>
-                    <option value="二頭肌-長頭外側">二頭肌 (長頭/外側)</option>
-                    <option value="二頭肌-短頭內側">二頭肌 (短頭/內側)</option>
-                </select>
+                <select id="customMuscleSelect" onchange="toggleCustomMuscleInput()"></select>
+                <!-- 隱藏的輸入框，選擇"其他"時顯示 -->
+                <input type="text" id="customMuscleInput" placeholder="請輸入全新部位名稱 (例如: 背闊肌)" style="display: none; margin-top: 8px; border-color: #2563eb;">
             </div>
             <div class="form-group">
                 <label>輸入動作名稱：</label>
-                <input type="text" id="customActionName" placeholder="例如：自製橡筋帶外展飛鳥">
+                <input type="text" id="customActionName" placeholder="例如：滑輪下拉">
                 <button class="btn-add" onclick="addNewCustomAction()">儲存特定動作至選單</button>
             </div>
         </div>
@@ -181,63 +175,68 @@
 </div>
 
 <script>
-    /* ============================================================
-       新增 1：Service Worker 註冊 (支援 PWA 離線安裝)
-       ============================================================ */
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('Service Worker 註冊成功'))
-                .catch(err => console.log('Service Worker 註冊失敗: ', err));
-        });
+    /* === PWA 安裝按鈕與提示邏輯 === */
+    let deferredPrompt;
+    const installBtn = document.getElementById('installAppBtn');
+    
+    // 判斷是否為獨立 App 模式 (已安裝)
+    const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+    const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+    // Android/Chrome 攔截安裝事件
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (!isStandalone) installBtn.style.display = 'block';
+    });
+
+    // 如果是 iOS 且尚未安裝，主動顯示按鈕
+    if (isIos && !isStandalone) {
+        installBtn.style.display = 'block';
     }
 
-    /* ============================================================
-       新增 2：Screen Wake Lock API (螢幕常亮控制)
-       ============================================================ */
-    let wakeLock = null;
-
-    async function requestWakeLock() {
-        if ('wakeLock' in navigator) {
-            try {
-                wakeLock = await navigator.wakeLock.request('screen');
-                console.log('螢幕常亮已啟動');
-            } catch (err) {
-                console.error(`Wake Lock error: ${err.name}, ${err.message}`);
-            }
-        }
-    }
-
-    function releaseWakeLock() {
-        if (wakeLock !== null) {
-            wakeLock.release()
-                .then(() => {
-                    wakeLock = null;
-                    console.log('螢幕常亮已解除');
-                });
-        }
-    }
-
-    // 當使用者切換分頁後回來，如果訓練仍在進行中，需要重新請求 Wake Lock
-    document.addEventListener('visibilitychange', async () => {
-        if (wakeLock !== null && document.visibilityState === 'visible') {
-            await requestWakeLock();
+    installBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            // Android 觸發安裝
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') installBtn.style.display = 'none';
+            deferredPrompt = null;
+        } else if (isIos) {
+            // iOS 彈出教學
+            alert('【iOS 用戶安裝提示】\n請點擊瀏覽器正下方的「分享」按鈕 📤\n(方塊往上的箭頭)\n\n然後往下滑選擇「加入主畫面」即可將此 App 安裝到桌面！');
         }
     });
 
-    /* ============================================================
-       原有的業務邏輯
-       ============================================================ */
+    /* === Service Worker 註冊 === */
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .catch(err => console.log('SW Error: ', err));
+        });
+    }
+
+    /* === Screen Wake Lock (螢幕常亮) === */
+    let wakeLock = null;
+    async function requestWakeLock() {
+        if ('wakeLock' in navigator) {
+            try { wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
+        }
+    }
+    function releaseWakeLock() {
+        if (wakeLock !== null) { wakeLock.release().then(() => wakeLock = null); }
+    }
+    document.addEventListener('visibilitychange', async () => {
+        if (wakeLock !== null && document.visibilityState === 'visible') { await requestWakeLock(); }
+    });
+
+    /* === 核心資料庫與邏輯 === */
     const defaultActions = [
         { muscle: "胸肌-上胸", name: "【啞鈴】上斜啞鈴推舉 (Incline DB Press)" },
-        { muscle: "胸肌-上胸", name: "【啞鈴】上斜啞鈴飛鳥 (Incline DB Flyes)" },
         { muscle: "胸肌-中下胸", name: "【啞鈴】平躺啞鈴推舉 (Flat DB Press)" },
-        { muscle: "胸肌-中下胸", name: "【自重】標準標準俯臥撐 (Push-up)" },
         { muscle: "肩膊-前束", name: "【啞鈴】坐姿啞鈴推舉 (Dumbbell Shoulder Press)" },
         { muscle: "肩膊-中束", name: "【啞鈴】站姿啞鈴側平舉 (DB Lateral Raise)" },
-        { muscle: "肩膊-後束", name: "【啞鈴】俯身啞鈴飛鳥 (Bent-over DB Reverse Flys)" },
-        { muscle: "二頭肌-長頭外側", name: "【啞鈴】斜椅啞鈴彎舉 (Incline DB Curl)" },
-        { muscle: "二頭肌-長頭外側", name: "【啞鈴】站姿啞鈴錘式彎舉 (DB Hammer Curl)" }
+        { muscle: "二頭肌-長頭外側", name: "【啞鈴】斜椅啞鈴彎舉 (Incline DB Curl)" }
     ];
 
     let actionDatabase = [];
@@ -266,8 +265,64 @@
     window.onload = function() {
         const cached = localStorage.getItem('custom_actions_v2');
         actionDatabase = cached ? [...defaultActions, ...JSON.parse(cached)] : [...defaultActions];
+        updateMuscleFilterOptions();
         filterTargetMuscles(); 
     };
+
+    /* === 更新部位選單邏輯 (包含"其他"選項) === */
+    function updateMuscleFilterOptions() {
+        const filterEl = document.getElementById('muscleFilter');
+        const customSelect = document.getElementById('customMuscleSelect');
+        
+        const currentFilter = filterEl.value; 
+        const currentCustom = customSelect.value;
+        
+        const uniqueMuscles = [...new Set(actionDatabase.map(act => act.muscle))];
+        
+        // 1. 更新主篩選器
+        filterEl.innerHTML = '<option value="all">-- 全部肌肉部位 --</option>';
+        uniqueMuscles.forEach(muscle => {
+            const opt = document.createElement('option');
+            opt.value = muscle; opt.innerText = muscle; 
+            filterEl.appendChild(opt);
+        });
+
+        // 2. 更新自訂動作下拉選單
+        customSelect.innerHTML = '';
+        uniqueMuscles.forEach(muscle => {
+            const opt = document.createElement('option');
+            opt.value = muscle; opt.innerText = muscle; 
+            customSelect.appendChild(opt);
+        });
+        
+        // 加入"其他"選項
+        const otherOpt = document.createElement('option');
+        otherOpt.value = 'other'; 
+        otherOpt.innerText = '➕ 其他 (自行輸入新部位)';
+        otherOpt.style.fontWeight = 'bold';
+        otherOpt.style.color = '#2563eb';
+        customSelect.appendChild(otherOpt);
+
+        if (uniqueMuscles.includes(currentFilter)) filterEl.value = currentFilter;
+        if (uniqueMuscles.includes(currentCustom) || currentCustom === 'other') {
+            customSelect.value = currentCustom;
+        } else {
+            customSelect.value = uniqueMuscles[0];
+        }
+        toggleCustomMuscleInput();
+    }
+
+    /* === 切換「其他」輸入框顯示/隱藏 === */
+    function toggleCustomMuscleInput() {
+        const select = document.getElementById('customMuscleSelect');
+        const input = document.getElementById('customMuscleInput');
+        if (select.value === 'other') {
+            input.style.display = 'block';
+            input.focus();
+        } else {
+            input.style.display = 'none';
+        }
+    }
 
     function filterTargetMuscles() {
         const filterValue = document.getElementById('muscleFilter').value;
@@ -278,15 +333,27 @@
         filtered.forEach(act => {
             const opt = document.createElement('option');
             opt.value = act.name;
-            opt.innerText = `[${act.muscle.split('-')[1]}] ${act.name}`;
+            const displayMuscle = act.muscle.includes('-') ? act.muscle.split('-')[1] : act.muscle;
+            opt.innerText = `[${displayMuscle}] ${act.name}`;
             selectEl.appendChild(opt);
         });
     }
 
+    /* === 儲存自訂動作邏輯更新 === */
     function addNewCustomAction() {
         const nameInput = document.getElementById('customActionName');
-        const muscleType = document.getElementById('customMuscle').value;
+        const selectEl = document.getElementById('customMuscleSelect');
+        const textInputEl = document.getElementById('customMuscleInput');
+        
         const actionName = nameInput.value.trim();
+        let muscleType = selectEl.value;
+        
+        // 如果使用者選擇了「其他」，則取隱藏輸入框的值
+        if (muscleType === 'other') {
+            muscleType = textInputEl.value.trim();
+            if (!muscleType) { alert('請輸入全新的肌肉部位名稱！'); return; }
+        }
+        
         if (!actionName) { alert('請先輸入動作名稱！'); return; }
         
         const newAction = { muscle: muscleType, name: `【自設】${actionName}` };
@@ -298,12 +365,21 @@
         localStorage.setItem('custom_actions_v2', JSON.stringify(customList));
         
         nameInput.value = ''; 
+        textInputEl.value = '';
+        
+        updateMuscleFilterOptions();
+        
+        // 自動切換到剛才新增的部位與動作
         document.getElementById('muscleFilter').value = muscleType; 
+        document.getElementById('customMuscleSelect').value = muscleType;
+        toggleCustomMuscleInput();
         filterTargetMuscles(); 
+        
         document.getElementById('actionSelect').value = newAction.name;
-        alert(`成功將特定動作「${actionName}」加入選單！`);
+        alert(`成功將「${muscleType}」的動作「${actionName}」加入選單！`);
     }
 
+    /* === 節奏與計時核心邏輯 === */
     function generateRepTimeline(mode) {
         let timeline = [];
         const cfg = {
@@ -319,12 +395,10 @@
         return timeline;
     }
 
-    // ★ 修改處：呼叫 requestWakeLock()
     async function startTraining() {
         if(!document.getElementById('actionSelect').value) { alert('請先選擇動作！'); return; }
         if(intervalId) { clearInterval(intervalId); intervalId = null; }
         
-        // 啟動螢幕常亮
         await requestWakeLock();
 
         targetSets = parseInt(document.getElementById('targetSets').value);
@@ -353,11 +427,9 @@
             document.getElementById('subStatusText').innerText = `第 ${currentSet} 組即將開始... (目標 ${targetReps} 下)`;
             
             if (prepareSeconds > 0) {
-                playEnhancedSound('sine', 440, 0.08);
-                prepareSeconds--;
+                playEnhancedSound('sine', 440, 0.08); prepareSeconds--;
             } else {
-                appState = 'WORKOUT';
-                prepareSeconds = 0;
+                appState = 'WORKOUT'; prepareSeconds = 0;
                 playEnhancedSound('square', 880, 0.25);
             }
             return;
@@ -375,8 +447,7 @@
             
             beatCount++;
             if (beatCount >= modeTimeline.length) {
-                beatCount = 0;
-                currentRep++;
+                beatCount = 0; currentRep++;
                 
                 if (currentRep > targetReps) {
                     logCompletedSet(targetReps); 
@@ -384,8 +455,7 @@
                     if (currentSet >= targetSets) {
                         endEntireWorkout();
                     } else {
-                        clearInterval(intervalId);
-                        intervalId = null;
+                        clearInterval(intervalId); intervalId = null;
                         
                         appState = 'ASK_USER';
                         document.body.className = 'rest';
@@ -396,7 +466,6 @@
                         document.getElementById('btnKeep').innerText = `保持 ${targetReps} 下，開始休息`;
                         document.getElementById('confirmBox').style.display = 'flex';
                         tempCalcReps = targetReps;
-                        
                         playEnhancedSound('sine', 523, 0.4); 
                     }
                 }
@@ -410,84 +479,41 @@
             document.getElementById('mainDisplay').innerText = `${prepareSeconds}s`;
             document.getElementById('subStatusText').innerText = `下組預備：第 ${currentSet + 1} 組 / 目標 ${targetReps} 下`;
             
-            if (prepareSeconds <= 3 && prepareSeconds > 0) { 
-                playEnhancedSound('sine', 600, 0.08); 
-            }
+            if (prepareSeconds <= 3 && prepareSeconds > 0) playEnhancedSound('sine', 600, 0.08); 
             
             if (prepareSeconds > 0) {
                 prepareSeconds--;
             } else {
-                currentSet++;
-                currentRep = 1;
-                beatCount = 0;
-                appState = 'WORKOUT';
+                currentSet++; currentRep = 1; beatCount = 0; appState = 'WORKOUT';
                 playEnhancedSound('square', 880, 0.25);
             }
         }
     }
 
-    function chooseKeepReps() {
-        hideConfirmUI();
-        enterRestCountdown();
-    }
-
-    function showModifierPanel() {
-        document.getElementById('calcDisplay').innerText = tempCalcReps;
-        document.getElementById('modifierPanel').style.display = 'flex';
-        document.getElementById('btnConfirmChange').style.display = 'block';
-    }
-
-    function adjustCalcReps(amount) {
-        tempCalcReps += amount;
-        if (tempCalcReps < 1) tempCalcReps = 1;
-        document.getElementById('calcDisplay').innerText = tempCalcReps;
-        playEnhancedSound('sine', 440, 0.05);
-    }
-
-    function chooseChangedReps() {
-        targetReps = tempCalcReps;
-        hideConfirmUI();
-        enterRestCountdown();
-    }
-
-    function hideConfirmUI() {
-        document.getElementById('confirmBox').style.display = 'none';
-        document.getElementById('modifierPanel').style.display = 'none';
-        document.getElementById('btnConfirmChange').style.display = 'none';
-    }
-
-    function enterRestCountdown() {
-        appState = 'REST';
-        prepareSeconds = restDuration;
-        intervalId = setInterval(runTick, 1000);
-        runTick();
-    }
+    function chooseKeepReps() { hideConfirmUI(); enterRestCountdown(); }
+    function showModifierPanel() { document.getElementById('calcDisplay').innerText = tempCalcReps; document.getElementById('modifierPanel').style.display = 'flex'; document.getElementById('btnConfirmChange').style.display = 'block'; }
+    function adjustCalcReps(amount) { tempCalcReps += amount; if (tempCalcReps < 1) tempCalcReps = 1; document.getElementById('calcDisplay').innerText = tempCalcReps; playEnhancedSound('sine', 440, 0.05); }
+    function chooseChangedReps() { targetReps = tempCalcReps; hideConfirmUI(); enterRestCountdown(); }
+    function hideConfirmUI() { document.getElementById('confirmBox').style.display = 'none'; document.getElementById('modifierPanel').style.display = 'none'; document.getElementById('btnConfirmChange').style.display = 'none'; }
+    function enterRestCountdown() { appState = 'REST'; prepareSeconds = restDuration; intervalId = setInterval(runTick, 1000); runTick(); }
 
     function logCompletedSet(repsDone) {
         const selectedAction = document.getElementById('actionSelect').value;
         const modeName = { normal: '正常訓練', eccentric: '離心訓練', pump: '充血訓練' }[currentMode];
         const now = new Date();
         const timeStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-        
-        const logMsg = `⏱️ ${timeStr} - ${selectedAction} [第 ${currentSet}/${targetSets} 組 - ${modeName} 實際完成 ${repsDone}下]`;
+        const logMsg = `⏱️ ${timeStr} - ${selectedAction} [第 ${currentSet}/${targetSets} 組 - ${modeName} 完成 ${repsDone}下]`;
         const logContainer = document.getElementById('logContainer');
         const newLog = document.createElement('div');
-        newLog.className = 'log-item';
-        newLog.innerText = logMsg;
+        newLog.className = 'log-item'; newLog.innerText = logMsg;
         logContainer.insertBefore(newLog, logContainer.firstChild);
 
-        todayWorkoutSession.push({
-            '訓練時間': timeStr, '訓練動作': selectedAction, '組數進度': `第 ${currentSet} 組 / 共 ${targetSets} 組`, '節奏模式': modeName, '實際完成下數(Reps)': repsDone
-        });
+        todayWorkoutSession.push({ '訓練時間': timeStr, '訓練動作': selectedAction, '組數進度': `第 ${currentSet} 組 / 共 ${targetSets} 組`, '節奏模式': modeName, '實際完成下數': repsDone });
     }
 
-    // ★ 修改處：呼叫 releaseWakeLock()
     function endEntireWorkout() {
         if(intervalId) { clearInterval(intervalId); intervalId = null; }
-        
-        // 解除螢幕常亮
         releaseWakeLock();
-
         playEnhancedSound('square', 950, 0.6);
         document.body.className = '';
         document.getElementById('statusText').innerText = '🎉 該動作所有組數完成！';
@@ -512,11 +538,8 @@
     function exportTodayLog() {
         if(todayWorkoutSession.length === 0) return;
         const now = new Date();
-        const dateStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
-        let fileContent = `=====================================\n🏋️‍♂️ 重量訓練全自動成果報告 (${dateStr})\n=====================================\n\n`;
-        todayWorkoutSession.forEach((item, index) => {
-            fileContent += `[記錄編號 ${index + 1}]\n• 訓練時間: ${item['訓練時間']}\n• 訓練動作: ${item['訓練動作']}\n• 完成進度: ${item['組數進度']}\n• 節奏模式: ${item['節奏模式']}\n• 實際完成下數: ${item['實際完成下數(Reps)']} Reps\n-------------------------------------\n`;
-        });
+        let fileContent = `=====================================\n🏋️‍♂️ 重量訓練全自動成果報告\n=====================================\n\n`;
+        todayWorkoutSession.forEach((item, idx) => { fileContent += `[記錄 ${idx + 1}] ${item['訓練時間']} | ${item['訓練動作']} | ${item['組數進度']} | ${item['實際完成下數']} Reps\n`; });
         const blob = new Blob([fileContent], { type: "text/plain;charset=utf-8" });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
